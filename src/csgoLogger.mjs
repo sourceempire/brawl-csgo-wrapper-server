@@ -1,9 +1,8 @@
 
-var express = require('express');
+import express from 'express';
 
-var serverHandler = require('./csgoServerHandler');
-const { logAddressPort } = require('./constants');
-
+import * as serverHandler from './csgoServerHandler.mjs';
+import { logAddressPort } from './constants.mjs';
 
 function rawBody(req, res, next) {
   req.setEncoding('utf8');
@@ -14,31 +13,6 @@ function rawBody(req, res, next) {
   req.on('end', function(){
     next();
   });
-}
-
-
-function setupCSGOLogging() {
-    var logger = express();
-    logger.use(rawBody);
-    logger.post('/csgolog', (req, res) => {
-        var events = req.rawBody.split('\n');
-        for (var i = 0; i < events.length; i++) {
-            var event = events[i];
-            if (event.includes('get5_event:')) {
-                try {
-                    var get5Event = JSON.parse(event.split('get5_event:')[1]);
-                    handleGet5Events(get5Event);
-                } catch(err) {
-                    console.dir(err)
-                }
-            }    
-        }
-        res.send();
-    });
-
-    logger.listen(logAddressPort, () => {
-        console.log('Running cs go logger server on ' + logAddressPort);
-    });
 }
 
 function handleGet5Events(get5Event) {
@@ -81,6 +55,26 @@ function handleGet5Events(get5Event) {
     }
 }
 
-module.exports = {
-    setupCSGOLogging
+export function setupCSGOLogging() {
+    var logger = express();
+    logger.use(rawBody);
+    logger.post('/csgolog', (req, res) => {
+        var events = req.rawBody.split('\n');
+        for (var i = 0; i < events.length; i++) {
+            var event = events[i];
+            if (event.includes('get5_event:')) {
+                try {
+                    var get5Event = JSON.parse(event.split('get5_event:')[1]);
+                    handleGet5Events(get5Event);
+                } catch(err) {
+                    console.dir(err)
+                }
+            }    
+        }
+        res.send();
+    });
+
+    logger.listen(logAddressPort, () => {
+        console.log('Running cs go logger server on ' + logAddressPort);
+    });
 }

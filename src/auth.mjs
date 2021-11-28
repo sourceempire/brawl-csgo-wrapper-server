@@ -1,5 +1,5 @@
-const fs = require('fs');
-const jwt = require('jsonwebtoken');
+import fs from 'fs';
+import jwt from 'jsonwebtoken';
 
 const APIKey = 'ww7f2puejmcuox9vgysw0zfr';
 const privateKey = fs.readFileSync('jwt-rsa256.key');
@@ -15,7 +15,7 @@ function validAPIKey(req) {
     }
 }
 
-function checkAuth(req, res, next) {
+export function checkAuth(req, res, next) {
   if (req.method === 'OPTIONS') return next();
 
   if (validAPIKey(req)) {
@@ -26,11 +26,11 @@ function checkAuth(req, res, next) {
   }
 }
 
-function generateJWT() {
+export function generateJWT() {
   return jwt.sign({}, privateKey, { algorithm: 'RS256', expiresIn: 5*60 });  
 }
 
-function validateJWT(token) {
+export function validateJWT(token) {
   try {
     jwt.verify(token, publicKey, { algorithms: ['RS256'] });
     return true;
@@ -41,7 +41,7 @@ function validateJWT(token) {
 }
 
 var allowedOrigins = ['http://localhost:8080', 'https://api.brawlgaming.com', 'https://brawl-gaming-server.herokuapp.com'];
-function cors(req, res, next) {
+export function cors(req, res, next) {
   var origin = req.headers.origin;
   if (allowedOrigins.indexOf(origin) != -1){
     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -52,12 +52,4 @@ function cors(req, res, next) {
   res.header('Access-Control-Allow-Headers', 'Access-Control-Allow-Origin, Origin, Content-Type, Accept, Authorization, Cache-Contro, X-XSRF-TOKEN');
   res.header('Access-Control-Allow-Credentials', true); 
   next();
-}
-
-
-module.exports = {
-  checkAuth,
-  generateJWT,
-  validateJWT,
-  cors
 }

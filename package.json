@@ -4,13 +4,15 @@
   "description": "",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node src/runner.js",
+    "lint": "eslint",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Source Empire",
   "license": "ISC",
   "dependencies": {
     "dotenv": "^8.0.0",
+    "esm": "^3.2.25",
     "express": "^4.16.3",
     "fb-watchman": "^2.0.0",
     "glob": "^7.1.2",
@@ -21,5 +23,8 @@
     "sockjs": "^0.3.19",
     "srcds-rcon": "^2.2.1",
     "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.3.0"
   }
 }
