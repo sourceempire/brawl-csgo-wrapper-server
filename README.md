@@ -1,1 +1,1 @@
-# brawl-gaming-csgo-wrapper-server
+# Server for handeling CSGO incstances
