@@ -1,14 +1,18 @@
-require('dotenv').config()
-var express = require('express');
-var bodyParser = require('body-parser');
-var sockjs = require('sockjs');
-var filehandler = require('./fileHandler');
-var serverHandler = require('./csgoServerHandler');
-var matchHandler = require('./matchHandler');
-var {isEmpty} = require('./utils');
-var auth = require('./auth');
-var csgoLogger = require('./csgoLogger');
-var eventListener = require('./eventListener');
+import dotenv from 'dotenv';
+import express from 'express';
+import bodyParser from 'body-parser';
+import sockjs from 'sockjs';
+import {
+  validateRightFormatJSON,
+} from './fileHandler.mjs';
+import * as serverHandler from './csgoServerHandler.mjs';
+import * as matchHandler from './matchHandler.mjs';
+import {isEmpty} from './utils.mjs';
+import * as auth from './auth.mjs';
+import * as csgoLogger from './csgoLogger.mjs';
+import * as eventListener from './eventListener.mjs';
+
+dotenv.config()
 
 var app = express();
 app.disable('x-powered-by');
@@ -27,7 +31,7 @@ app.post('/startmatch',  (req, res) => {
         return;
     }
     
-    if (filehandler.validateRightFormatJSON(matchData)) {
+    if (validateRightFormatJSON(matchData)) {
         try {
             const matchId = serverHandler.startNewMatch(matchData);
             if (matchId !== null) {
@@ -105,7 +109,7 @@ socket.on('connection', function(conn) {
   }, 5*60*1000); // when jwt should expire
 });
 
-server = app.listen(40610, () => {
+const server = app.listen(40610, () => {
     console.log('Running cs go wrapper server on 40610');
 });
 socket.installHandlers(server, { prefix: '/events' });

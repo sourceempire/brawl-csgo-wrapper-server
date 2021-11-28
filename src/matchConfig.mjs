@@ -1,7 +1,6 @@
-const { logAddressPort } = require('./constants');
-var vdf = require('simple-vdf');
+import vdf from 'simple-vdf';
 
-function createWingmanConfig(matchId, team1, team2, map){
+export function createWingmanConfig(matchId, team1, team2, map){
     return vdf.stringify({
         'Match': {
             "matchid": matchId,
@@ -50,7 +49,7 @@ function createWingmanConfig(matchId, team1, team2, map){
     });
 }
 
-function createCompetetiveConfig(matchId, team1, team2, map){
+export function createCompetetiveConfig(matchId, team1, team2, map){
 
     return vdf.stringify({
         'Match': {
@@ -83,7 +82,7 @@ function createCompetetiveConfig(matchId, team1, team2, map){
     });
 }
 
-function createDeathmatchConfig(matchId, team1, team2, map){
+export function createDeathmatchConfig(matchId, team1, team2, map){
     return vdf.stringify({
         'Match': {
             "matchid": matchId,
@@ -118,7 +117,7 @@ function createDeathmatchConfig(matchId, team1, team2, map){
     });
 }
 
-function create1vs1Config(matchId, team1, team2, map){
+export function create1vs1Config(matchId, team1, team2, map){
     return vdf.stringify({
         'Match': {
             "matchid": matchId,
@@ -168,12 +167,5 @@ function create1vs1Config(matchId, team1, team2, map){
             }
         }
     });
-}
-
-module.exports = {
-    createCompetetiveConfig,
-    createDeathmatchConfig,
-    createWingmanConfig,
-    create1vs1Config
 }
 

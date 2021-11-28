@@ -1,12 +1,13 @@
-var watchman = require('fb-watchman');
-var client = new watchman.Client();
-const { getResultFromFile } = require('./fileHandler');
+import watchman from 'fb-watchman';
+import { getResultFromFile } from './fileHandler.mjs';
+
+const client = new watchman.Client();
 
 var USER_DIR = "/home/steam/";
 
 // Starting WATCHMAN
 // serverId and matchId as parameters to be able to locate right csgo game and server
-function watchForResult(serverId, matchId, callback) {
+export function watchForResult(serverId, matchId, callback) {
 
   // Setting the dir_of_interest
   // In this case the directory of each csgo server
@@ -103,7 +104,7 @@ function watchForResult(serverId, matchId, callback) {
 }
 
 // Stop a subscription for the file that we do the watch on
-function stopWatchForResult(serverId) {
+export function stopWatchForResult(serverId) {
   var csgoPath = USER_DIR+"csgo@"+serverId+"/csgo";
 
   client.command(['unsubscribe', csgoPath, 'result_file_subscription_'+serverId],
@@ -118,7 +119,3 @@ function stopWatchForResult(serverId) {
     }
   });
 };
-
-module.exports = {
-  watchForResult, stopWatchForResult
-}

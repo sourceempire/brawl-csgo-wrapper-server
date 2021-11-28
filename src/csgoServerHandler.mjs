@@ -1,13 +1,12 @@
-const Rcon = require('srcds-rcon');
-const { spawn } = require('child_process');
-const { watchForResult, stopWatchForResult } = require('./fileWatch');
+import { spawn } from 'child_process';
+import { watchForResult, stopWatchForResult } from './fileWatch.mjs';
 
-const fileHandler = require('./fileHandler');
-const matchHandler = require('./matchHandler');
-const eventListener = require('./eventListener');
-const schedule = require('node-schedule');
+import * as fileHandler from './fileHandler.mjs';
+import * as matchHandler from './matchHandler.mjs';
+import * as eventListener from './eventListener.mjs';
+import schedule from 'node-schedule';
 
-const { logAddressPort } = require('./constants');
+import { logAddressPort } from './constants.mjs';
 
 const csgoServerPath = '/home/steam/csgo-multiserver';
 const csgoServerPathFake = '/home/steam/fake-csgo-server'; 
@@ -41,9 +40,9 @@ var isServerUpdating = false;
 * This function will check for updates on csgo servers every day at 10:07:10 if
 * there is one update it will update it.
 */
-const updateCSGOJob = schedule.scheduleJob('10 7 10 * * *', checkIfUpdateNeeded);
+schedule.scheduleJob('10 7 10 * * *', checkIfUpdateNeeded);
 
-function checkIfUpdateNeeded(){
+export function checkIfUpdateNeeded(){
     try{
         isServerUpdating = true;
         console.log('Updating server');
@@ -56,17 +55,17 @@ function checkIfUpdateNeeded(){
     }
 }
 
-function serverUpdating() {
+export function serverUpdating() {
     return isServerUpdating;
 }
 
 //Building the right link for a specific server
-function buildSteamJoinLink(serverAddress,port) {
+export function buildSteamJoinLink(serverAddress,port) {
     return 'steam://connect/'+serverAddress+':'+port;
 }
 
 //Returns the complete link
-function getJoinLink(matchId) {
+export function getJoinLink(matchId) {
     for (var serverId of Object.keys(servers)) {
         if (servers[serverId].currentMatchId == matchId) {
             return servers[serverId].joinLink;
@@ -75,21 +74,21 @@ function getJoinLink(matchId) {
 }
 
 //Sets a matchId to server called when match starts.
-function setMatchId(serverId, matchId) {
+export function setMatchId(serverId, matchId) {
     servers[serverId].currentMatchId = matchId;
 }
 
 //Clears a servers matchId function called when match is over.
-function clearMatchId(serverId) {
+export function clearMatchId(serverId) {
     servers[serverId].currentMatchId = null;
 }
 
 //Get function that returns a specific servers matchId.
-function getMatchId(serverId) {
+export function getMatchId(serverId) {
     return servers[serverId].currentMatchId;
 }
 
-function setMatchStarted(matchId) {
+export function setMatchStarted(matchId) {
     for (var serverId of Object.keys(servers)) {
         if (servers[serverId].currentMatchId == matchId) {
             servers[serverId].started = true;
@@ -98,7 +97,7 @@ function setMatchStarted(matchId) {
 }
 
 //Get function that returns id of first available server.
-function getAvailableServer() {
+export function getAvailableServer() {
     var keys = Object.keys(servers);
     for (var i = 0; i < keys.length; i++) {
         var serverId = keys[i];
@@ -111,7 +110,7 @@ function getAvailableServer() {
 }
 
 //Creates match
-function startNewMatch(matchData) {
+export function startNewMatch(matchData) {
     const serverId = getAvailableServer();
     if (serverId === null) {
         return null;
@@ -182,7 +181,7 @@ function finishMatch(serverId, result) {
     fileHandler.moveMatchFiles(serverId, matchId);
 }
 //Sends command for starting the server.
-function startCSGOServer(serverId) {
+export function startCSGOServer(serverId) {
     var stop;
     var start;
     //serverUpdating();
@@ -218,7 +217,7 @@ function startCSGOServer(serverId) {
     });
 }
 
-function endMatch(serverId) {
+export function endMatch(serverId) {
     try{
         spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_endmatch'], spawnOptions);
     } catch(e){
@@ -227,7 +226,7 @@ function endMatch(serverId) {
 }
 
 //Sends commands for stopping server
-function stopCSGOServer(serverId) {
+export function stopCSGOServer(serverId) {
     try{
         setTimeout(function() {
             console.log('Stopping server');
@@ -241,16 +240,3 @@ function stopCSGOServer(serverId) {
         console.log('Failed to stop server!', e);
     }
 }
-
-
-module.exports = {
-    startCSGOServer,
-    startNewMatch,
-    stopMatch,
-    getAvailableServer,
-    finishMatch,
-    getJoinLink,
-    checkIfUpdateNeeded,
-    serverUpdating,
-    setMatchStarted
-};
