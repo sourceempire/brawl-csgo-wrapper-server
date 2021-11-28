@@ -31,9 +31,9 @@ export function clearSocket(conn) {
 }
 
 export function sendMatchResult(matchId, result) {
-  _sendEvent("match-result", {match_id: matchId, result: result});
+  _sendEvent('match-result', {match_id: matchId, result: result});
 }
 
 export function sendMatchError(error) {
-  _sendEvent("match-error", {error: error});
+  _sendEvent('match-error', {error: error});
 }

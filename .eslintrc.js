@@ -1,13 +1,14 @@
 module.exports = {
-    "env": {
-        "browser": true,
-        "es2021": true
+    'env': {
+        'node': true,
+        'es2021': true
     },
-    "extends": "eslint:recommended",
-    "parserOptions": {
-        "ecmaVersion": 13,
-        "sourceType": "module"
+    'extends': 'eslint:recommended',
+    'parserOptions': {
+        'ecmaVersion': 13,
+        'sourceType': 'module'
     },
-    "rules": {
+    'rules': {
+        'quotes': ['error', 'single', { 'allowTemplateLiterals': true }]
     }
 };

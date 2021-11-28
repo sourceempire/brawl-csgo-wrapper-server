@@ -1,5 +1,4 @@
 import vdf from 'simple-vdf';
-import util from 'util';
 import { isEmpty } from './utils.mjs';
 
 var currentMatches = {};
@@ -139,6 +138,7 @@ export function getMatchResultFormated(matchId) {
 function _getMapsResult(result) {
   var i = 0;
   var results = [];
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (result['map'+i] === undefined) {
       break;
@@ -167,6 +167,7 @@ function _getMapsResult(result) {
 function _getTeamResult(teamResult) {
   var players = [];
   for (var steamId in teamResult) {
+    // eslint-disable-next-line no-prototype-builtins
     if (teamResult.hasOwnProperty(steamId)) {
       var playerResult = teamResult[steamId];
       if (steamId === 'score') {
@@ -191,6 +192,8 @@ function _countTotalRoundsWon(result) {
   var i = 0;
   var team1Score = 0;
   var team2Score = 0;
+  
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     if (result['map'+i] === undefined) {
       break;
@@ -204,11 +207,3 @@ function _countTotalRoundsWon(result) {
   return {team1Score, team2Score};
 }
 
-
-
-function thisIsATestYesItIs() {
-  var matchId = newMatch('csgo1');
-  setDummyResult(matchId);
-  console.log(util.inspect(getMatchResultFormated(matchId), {showHidden: false, depth: null}));
-}
-//thisIsATestYesItIs();

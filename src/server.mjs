@@ -2,9 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
 import sockjs from 'sockjs';
-import {
-  validateRightFormatJSON,
-} from './fileHandler.mjs';
+import { validateRightFormatJSON } from './fileHandler.mjs';
 import * as serverHandler from './csgoServerHandler.mjs';
 import * as matchHandler from './matchHandler.mjs';
 import {isEmpty} from './utils.mjs';

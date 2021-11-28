@@ -15,7 +15,7 @@ const serverAddress = process.env.SERVER_ADDRESS;
 
 
 //NEEDS TO HAVE A SPACE AT THE END TO BE DOUBLE QUOTED.
-const logaddress = "http://localhost:"+logAddressPort+"/csgolog ";
+const logaddress = 'http://localhost:'+logAddressPort+'/csgolog ';
 
 const spawnOptions = {
   //Change this to csgoServerPath to start real games*/
@@ -26,7 +26,7 @@ const spawnOptions = {
 
 var servers = {};
 for (var i = 1; i <= 5; i++) { 
-  servers["csgo"+ i] = {
+  servers['csgo'+ i] = {
     available: true,
     currentMatchId: null,
     matchHistory: [],
@@ -116,7 +116,7 @@ export function startNewMatch(matchData) {
         return null;
     }
     const matchId = matchHandler.newMatch(matchData.matchid);
-    console.log("Created match " + matchId)
+    console.log('Created match ' + matchId)
     try {
         fileHandler.createMatchCfg(matchData, serverId, matchId);
     } catch(error) {
@@ -127,14 +127,14 @@ export function startNewMatch(matchData) {
     startCSGOServer(serverId);
     setMatchId(serverId, matchId);
     watchForResult(serverId, matchId, (pathToResultFile) => {
-        console.log("finished match")
+        console.log('finished match')
         onResultCreated(serverId, pathToResultFile);
     });
 
     setTimeout(function() {
         if (servers[serverId].currentMatchId === matchId && 
                 !servers[serverId].started) {
-            console.log("Server turned off since match did not start");
+            console.log('Server turned off since match did not start');
             stopCSGOServer(serverId);
         }
     }, 6*60*1000); // stop if not started in 6 minutes
@@ -144,8 +144,8 @@ export function startNewMatch(matchData) {
 }
 
 //Stop ongoing match
-function stopMatch(matchId) {
-    console.log("stopping match");
+export function stopMatch(matchId) {
+    console.log('stopping match');
     for (const serverId of Object.keys(servers)) {
         if (servers[serverId].currentMatchId === matchId) {
             console.log('server id: ' + serverId);
@@ -210,7 +210,7 @@ export function startCSGOServer(serverId) {
                     }, 1000);
                     console.log('started match');
                 } catch(e) {
-                    console.log("Server did not start!", e);
+                    console.log('Server did not start!', e);
                 }
             }, 1000);
         });
@@ -230,7 +230,7 @@ export function stopCSGOServer(serverId) {
     try{
         setTimeout(function() {
             console.log('Stopping server');
-            var stop = spawn('./csgo-server', ['@' + serverId, 'stop'], spawnOptions);
+            spawn('./csgo-server', ['@' + serverId, 'stop'], spawnOptions);
             servers[serverId].available = true;
             servers[serverId].started = false;
             servers[serverId].currentMatchId = null;    

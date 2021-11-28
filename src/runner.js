@@ -1,2 +1,2 @@
-require = require("esm")(module);
-module.exports = require("./server.mjs").default;
+const esmRequire = require('esm')(module);
+module.exports = esmRequire('./server.mjs').default;
