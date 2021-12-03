@@ -34,6 +34,46 @@ export function sendMatchResult(matchId, result) {
   _sendEvent('match-result', {match_id: matchId, result: result});
 }
 
+export function sendSeriesStartEvent(event) {
+  _sendEvent('series_start', event)
+}
+
+export function sendGoingLiveEvent(event) {
+  _sendEvent('going_live', event)
+}
+
+export function sendPlayerEvent(event) {
+  _sendEvent('player_death', event)
+}
+
+export function sendBombPlantedEvent(event) {
+  _sendEvent('bomb_planted', event)
+}
+
+export function bombDefusedEvent(event) {
+  _sendEvent('bomb_defused', event)
+}
+
+export function bombExplodedEvent(event) {
+  _sendEvent('bomb_exploded', event)
+}
+
+export function roundEndEvent(event) {
+  _sendEvent('round_end', event)
+}
+
+export function sideSwapEvent(event) {
+  _sendEvent('side_swap', event)
+}
+
+export function mapEndEvent(event) {
+  _sendEvent('map_end', event)
+}
+
+export function seriesEndEvent(event) {
+  _sendEvent('series_end', event)
+}
+
 export function sendMatchError(error) {
   _sendEvent('match-error', {error: error});
 }
