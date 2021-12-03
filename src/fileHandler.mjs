@@ -11,99 +11,115 @@ var USER_DIR = '/home/steam/';
 export function validateRightFormatJSON(matchData){
     var v = new jsonschema.Validator();
 
+    console.log(matchData);
+
     var matchCfgSchema = {
         'type': 'object',
         'properties': {
-            'matchid': {
-                'type': 'string',
-            },
+          'matchid': {
+              'type': 'string',
+          },
 
-            'team1': { 'oneOf' : [
+          'team1': {
+            'type': 'object',
+            'properties': {
+              'teamName': {
+                'type': 'string'
+              },
+              'players': { 'oneOf' : [
                 {
-                    'type': 'array',
-                    'minItems': 1,
-                    'maxItems': 1,
-                    'uniqueItems': true,
-                    'items': {
-                        'type':'string',
-                        'minLength':5,
-                        'maxLength': 30,
-                    }
+                  'type': 'array',
+                  'minItems': 1,
+                  'maxItems': 1,
+                  'uniqueItems': true,
+                  'items': {
+                    'type':'string',
+                    'minLength':5,
+                    'maxLength': 30,
+                  }
                 },
                 {
-                    'type': 'array',
-                    'minItems': 2,
-                    'maxItems': 2,
-                    'uniqueItems': true,
-                    'items': {
-                        'type':'string',
-                        'minLength':5,
-                        'maxLength': 30,
-                    }
+                  'type': 'array',
+                  'minItems': 2,
+                  'maxItems': 2,
+                  'uniqueItems': true,
+                  'items': {
+                    'type':'string',
+                    'minLength':5,
+                    'maxLength': 30,
+                  }
                 },
                 {
-                    'type': 'array',
-                    'minItems': 5,
-                    'maxItems': 5,
-                    'uniqueItems': true,
-                    'items': {
-                        'type':'string',
-                        'minLength':5,
-                        'maxLength': 30,
-                        }
+                  'type': 'array',
+                  'minItems': 5,
+                  'maxItems': 5,
+                  'uniqueItems': true,
+                  'items': {
+                    'type':'string',
+                    'minLength':5,
+                    'maxLength': 30,
                     }
+                  }
                 ]
-            },
-            'team2': {'oneOf' : [
+              }
+            }
+          },
+
+          'team2': {
+            'type': 'object',
+            'properties': {
+              'teamName': {
+                'type': 'string'
+              },
+              'players': {'oneOf' : [
                 {
-                    'type': 'array',
-                    'minItems': 1,
-                    'maxItems': 1,
-                    'uniqueItems': true,
-                    'items': {
-                        'type':'string',
-                        'minLength':5,
-                        'maxLength': 30,
-                    }
+                  'type': 'array',
+                  'minItems': 1,
+                  'maxItems': 1,
+                  'uniqueItems': true,
+                  'items': {
+                    'type':'string',
+                    'minLength':5,
+                    'maxLength': 30,
+                  }
                 },
                 {
-                    'type': 'array',
-                    'minItems': 2,
-                    'maxItems': 2,
-                    'uniqueItems': true,
-                    'items': {
-                        'type':'string',
-                        'minLength':5,
-                        'maxLength': 30,
-                    }
+                  'type': 'array',
+                  'minItems': 2,
+                  'maxItems': 2,
+                  'uniqueItems': true,
+                  'items': {
+                    'type':'string',
+                    'minLength':5,
+                    'maxLength': 30,
+                  }
                 },
                 {
-                    'type': 'array',
-                    'minItems': 5,
-                    'maxItems': 5,
-                    'uniqueItems': true,
-                    'items': {
-                        'type':'string',
-                        'minLength':5,
-                        'maxLength': 30,
-                        }
-                    }
-                ]
-            },
-
-            'map': {
-                'type': 'string',
-            },
-            'mode': {
-                'type': 'string',
-            },
-
-            'required': ['matchid', 'team1', 'team2', 'map', 'mode']
-        }
+                  'type': 'array',
+                  'minItems': 5,
+                  'maxItems': 5,
+                  'uniqueItems': true,
+                  'items': {
+                    'type':'string',
+                    'minLength':5,
+                    'maxLength': 30,
+                  }
+                }
+              ]
+            }
+          }
+        },
+        'map': {
+            'type': 'string',
+        },
+        'mode': {
+            'type': 'string',
+        },
+        'required': ['matchid', 'team1', 'team2', 'map', 'mode']
+      }
     };
 
     try {
-        console.log('MatchData', matchData)
         return v.validate(matchData, matchCfgSchema).valid;
     } catch(e) {
         console.log(e);
@@ -112,32 +128,34 @@ export function validateRightFormatJSON(matchData){
 }
 //Create the match.cfg file with the right matchid and right players on right team and convert it to valve format
 export function createMatchCfg(matchData, serverId, matchId) {
-    // convert arrays to maps
-    var team1 = teamListToObj(matchData.team1);
-    var team2 = teamListToObj(matchData.team2);
+  const { teamName: team1Name, players: team1Players } = matchData.team1
+  const { teamName: team2Name, players: team2Players } = matchData.team2
+  
+  // convert arrays to maps
+  var team1 = teamListToObj(team1Players);
+  var team2 = teamListToObj(team2Players);
 
-    var obj;
-    if (matchData.mode === 'competitive') {
-        obj = createMatchConfig.createCompetetiveConfig(matchId, team1, team2, matchData.map);
-    }
-    else if(matchData.mode === 'wingman') {
-        obj = createMatchConfig.createWingmanConfig(matchId,team1, team2, matchData.map);
-    }
-    else if(matchData.mode === 'deathmatch') {
-        obj = createMatchConfig.createDeathmatchConfig(matchId,team1, team2, matchData.map);
-    }
-    else if(matchData.mode === 'one vs one') {
-        obj = createMatchConfig.create1vs1Config(matchId,team1, team2, matchData.map);
-    }
-    else {
-        throw 'Invalid game mode';
-    }
-    fs.writeFile(USER_DIR+'csgo@'+serverId+'/csgo/match.cfg', obj, function(err) {
-        if (err) {
-            console.log('Error creating match.cfg', err);
-        }
-    });
-
+  var obj;
+  if (matchData.mode === 'competitive') {
+      obj = createMatchConfig.createCompetetiveConfig(matchId, team1, team2, team1Name, team2Name, matchData.map);
+  }
+  else if(matchData.mode === 'wingman') {
+      obj = createMatchConfig.createWingmanConfig(matchId, team1, team2, team1Name, team2Name, matchData.map);
+  }
+  else if(matchData.mode === 'deathmatch') {
+      obj = createMatchConfig.createDeathmatchConfig(matchId, team1, team2, team1Name, team2Name, matchData.map);
+  }
+  else if(matchData.mode === 'one vs one') {
+      obj = createMatchConfig.create1vs1Config(matchId, team1, team2, team1Name, team2Name, matchData.map);
+  }
+  else {
+      throw 'Invalid game mode';
+  }
+  fs.writeFile(USER_DIR+'csgo@'+serverId+'/csgo/match.cfg', obj, function(err) {
+      if (err) {
+          console.log('Error creating match.cfg', err);
+      }
+  });
 }
 
 // Converts valve format match result to string.

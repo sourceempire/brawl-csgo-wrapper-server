@@ -1,6 +1,6 @@
 import vdf from 'simple-vdf';
 
-export function createWingmanConfig(matchId, team1, team2, map){
+export function createWingmanConfig(matchId, team1, team2, team1Name, team2Name, map){
     return vdf.stringify({
         'Match': {
             'matchid': matchId,
@@ -13,11 +13,11 @@ export function createWingmanConfig(matchId, team1, team2, map){
                 [map]: ''
             },
             'team1': {
-                'name': 'team1',
+                'name': team1Name,
                 'players': team1
             },
             'team2':{
-                'name': 'team2',
+                'name': team2Name,
                 'players': team2
             },
             'cvars': {
@@ -49,7 +49,7 @@ export function createWingmanConfig(matchId, team1, team2, map){
     });
 }
 
-export function createCompetetiveConfig(matchId, team1, team2, map){
+export function createCompetetiveConfig(matchId, team1, team2, team1Name, team2Name, map){
 
     return vdf.stringify({
         'Match': {
@@ -57,17 +57,17 @@ export function createCompetetiveConfig(matchId, team1, team2, map){
             'skip_veto': 1,
             'num_maps':  1,
             'side_type': 'never_knife',
-            'players_per_team': 5,
+            'players_per_team': 5, // required to auto start when all players joined
             'maplist':
             {
                 [map]: ''
             },
             'team1': {
-                'name': 'team1',
+                'name': team1Name,
                 'players': team1
             },
             'team2':{
-                'name': 'team2',
+                'name': team2Name,
                 'players': team2
             },
             'cvars': {
@@ -81,7 +81,7 @@ export function createCompetetiveConfig(matchId, team1, team2, map){
     });
 }
 
-export function createDeathmatchConfig(matchId, team1, team2, map){
+export function createDeathmatchConfig(matchId, team1, team2, team1Name, team2Name, map){
     return vdf.stringify({
         'Match': {
             'matchid': matchId,
@@ -93,11 +93,11 @@ export function createDeathmatchConfig(matchId, team1, team2, map){
                 [map]: ''
             },
             'team1': {
-                'name': 'team1',
+                'name': team1Name,
                 'players': team1
             },
             'team2':{
-                'name': 'team2',
+                'name': team2Name,
                 'players': team2
             },
             'cvars': {
@@ -116,24 +116,24 @@ export function createDeathmatchConfig(matchId, team1, team2, map){
     });
 }
 
-export function create1vs1Config(matchId, team1, team2, map){
+export function create1vs1Config(matchId, team1, team2, team1Name, team2Name, map){
     return vdf.stringify({
         'Match': {
             'matchid': matchId,
             'skip_veto': 1,
             'num_maps':  1,
-            'players_per_team': 1,
+            'players_per_team': 1, // required to auto start when all players joined
             'side_type': 'never_knife',
             'maplist':
             {
                 [map]: ''
             },
             'team1': {
-                'name': 'team1',
+                'name': team1Name,
                 'players': team1
             },
             'team2':{
-                'name': 'team2',
+                'name': team2Name,
                 'players': team2
             },
             'cvars': {

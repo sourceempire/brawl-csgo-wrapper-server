@@ -13,16 +13,17 @@ const csgoServerPathFake = '/home/steam/fake-csgo-server';
 const serverAddress = process.env.SERVER_ADDRESS;
 
 
-
-//NEEDS TO HAVE A SPACE AT THE END TO BE DOUBLE QUOTED.
+//NEEDS TO HAVE A SPACE AT THE END TO BE DOUBLE QUOTED IN TERMINAL.
 const logaddress = 'http://localhost:'+logAddressPort+'/csgolog ';
+
 
 const spawnOptions = {
   //Change this to csgoServerPath to start real games*/
     cwd:  process.argv.includes('fake') ? csgoServerPathFake : csgoServerPath,
-    stdio: 'inherit', // attatch tty (csgo-multiserver requirement)
-    windowsVerbatimArguments: true
+    stdio: ['inherit'], // attatch tty (csgo-multiserver requirement)
+    windowsVerbatimArguments: true,
 };
+
 
 var servers = {};
 for (var i = 1; i <= 5; i++) { 
@@ -204,11 +205,15 @@ export function startCSGOServer(serverId) {
             setTimeout(() => {
                 try {
                     console.log('Starting get5');
-                    spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_loadmatch', 'match.cfg'], spawnOptions);
-                    setTimeout(() => {
+                    const load = spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_loadmatch', 'match.cfg'], spawnOptions);
+                    
+                    load.on('close', () => {
                         spawn('./csgo-server',  ['@'+ serverId, 'exec', 'logaddress_add_http', logaddress], spawnOptions);
-                    }, 1000);
-                    console.log('started match');
+                        console.log('started match');
+                    })
+                    load.on('error', (error) => {
+                        console.log(error);
+                    })
                 } catch(e) {
                     console.log('Server did not start!', e);
                 }
