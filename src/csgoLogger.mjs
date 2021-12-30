@@ -55,7 +55,6 @@ function handleGet5Events(get5Event) {
   switch (get5Event.event) {
     case 'series_start':
       eventListener.sendSeriesStartEvent(get5Event)
-      // console.log(get5Event)
       break;
     case 'going_live': 
       serverHandler.setMatchStarted(get5Event['matchid']);

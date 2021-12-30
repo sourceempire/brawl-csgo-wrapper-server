@@ -5,7 +5,7 @@ import sockjs from 'sockjs';
 import { validateRightFormatJSON } from './fileHandler.mjs';
 import * as serverHandler from './csgoServerHandler.mjs';
 import * as matchHandler from './matchHandler.mjs';
-import {isEmpty} from './utils.mjs';
+import { isEmpty } from './utils.mjs';
 import * as auth from './auth.mjs';
 import * as csgoLogger from './csgoLogger.mjs';
 import * as eventListener from './eventListener.mjs';
@@ -107,8 +107,8 @@ socket.on('connection', function(conn) {
   }, 5*60*1000); // when jwt should expire
 });
 
-const server = app.listen(40610, () => {
-    console.log('Running cs go wrapper server on 40610');
+const server = app.listen(40610, async () => {
+  console.log('Running cs go wrapper server on 40610');
 });
 socket.installHandlers(server, { prefix: '/events' });
 

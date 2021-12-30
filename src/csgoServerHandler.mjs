@@ -89,6 +89,10 @@ export function getMatchId(serverId) {
     return servers[serverId].currentMatchId;
 }
 
+export function getServerId(matchId) {
+    return Object.keys(servers).find(key => servers[key].currentMatchId === matchId)
+}
+
 export function setMatchStarted(matchId) {
     for (var serverId of Object.keys(servers)) {
         if (servers[serverId].currentMatchId == matchId) {
@@ -127,6 +131,7 @@ export function startNewMatch(matchData) {
     }
     startCSGOServer(serverId);
     setMatchId(serverId, matchId);
+    
     watchForResult(serverId, matchId, (pathToResultFile) => {
         console.log('finished match')
         onResultCreated(serverId, pathToResultFile);

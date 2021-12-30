@@ -4,14 +4,13 @@ import vdf from 'simple-vdf';
 import jsonschema from 'jsonschema';
 import glob from 'glob';
 
-var USER_DIR = '/home/steam/';
+export const USER_DIR = '/home/steam/';
+
 
 //Validates so JSON text from Brawl server is right.
 //TESTED: Validation is tested in file CSGOTest on brawl server.
 export function validateRightFormatJSON(matchData){
     var v = new jsonschema.Validator();
-
-    console.log(matchData);
 
     var matchCfgSchema = {
         'type': 'object',
@@ -158,23 +157,70 @@ export function createMatchCfg(matchData, serverId, matchId) {
   });
 }
 
-// Converts valve format match result to string.
-export function getResultFromFile(filePath) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(filePath, 'utf8', (err, data) => {
-            if (err) reject(err);
-
-            var result = vdf.parse(data);
-            resolve(result);
-        });
-    })
+export function getResultFromJsonFile(filePath) {
+  return new Promise((resolve, reject) => {
+    if (!filePath.endsWith('.json')) {
+      reject('file must be of type json');
+    }
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        reject(err);
+        return;
+      } 
+      
+      resolve(JSON.parse(data));
+    });
+  })
 }
 
+export function moveJsonMatchFileToBackupLocation(serverId, matchId) {
+  const fileName = `get5_matchstats_${matchId}.json`;
+  const filePath = `${USER_DIR}csgo@${serverId}/csgo/${fileName}'`;
+  
+  createJsonBackupLocationIfNonExistent();
+  const backupLocation = `${USER_DIR}backup_matchfiles/${fileName}`;
+
+  // Moves file
+  fs.rename(filePath, backupLocation, function (error) {
+    if (error) console.log(error);
+    // TODO -> check if below function works when working with json instead of cfg
+    // deleteUnecessaryMatchFiles(serverId);
+  })
+}
+
+function createJsonBackupLocationIfNonExistent() {
+  const _dirPath = USER_DIR+'backup_matchfiles';
+  if (!fs.existsSync(_dirPath)) {
+    // Folder absent
+    // Create folder
+    fs.mkdir(_dirPath, function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+  }
+}
+
+
+/*************** REMOVE WHEN JSON WORKS ***************/
+// Converts valve format match result to string.
+export function getResultFromFile(filePath) {
+  return new Promise((resolve, reject) => {
+      fs.readFile(filePath, 'utf8', (err, data) => {
+          if (err) reject(err);
+
+          var result = vdf.parse(data);
+          resolve(result);
+      });
+  })
+}
+
+/*************** REMOVE WHEN JSON WORKS ***************/
 // Move match files to backup location
 // Remove match files
 export function moveMatchFiles(serverId, matchId) {
   var fileName = USER_DIR+'csgo@'+serverId+'/csgo/get5_matchstats_'+matchId+'.cfg';
-  directoryExistence();
+  createBackupLocationIfNonExistent();
   // Move file
   fs.rename(fileName, USER_DIR+'/matchfiles/get5_matchstats_'+matchId+'.cfg', function(error){
     if(error)
@@ -184,6 +230,7 @@ export function moveMatchFiles(serverId, matchId) {
   deleteUnecessaryMatchFiles(serverId);
 }
 
+/*************** REMOVE WHEN JSON WORKS ***************/
 // Delete unnecessary files
 function deleteUnecessaryMatchFiles(serverId) {
   glob(USER_DIR+'csgo@'+serverId+'/csgo/get5_matchstats_*.cfg', function (err, files) {
@@ -230,9 +277,10 @@ function deleteUnecessaryMatchFiles(serverId) {
    })
 }
 
+/*************** REMOVE WHEN JSON WORKS ***************/
 // Check if the directory exist
 // If not, create it
-function directoryExistence() {
+function createBackupLocationIfNonExistent() {
   var _dirPath = USER_DIR+'matchfiles';
   if (!fs.existsSync(_dirPath)) {
     // Folder absent

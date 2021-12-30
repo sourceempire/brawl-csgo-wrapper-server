@@ -43,7 +43,8 @@ export function createWingmanConfig(matchId, team1, team2, team1Name, team2Name,
                 'cash_team_win_by_time_running_out_hostage': 2750,
                 'cash_team_win_by_time_running_out_bomb': 2750,
                 'mp_match_restart_delay': 300,
-                'hostname': 'Brawl Gaming Server'
+                'hostname': 'Brawl Gaming Server',
+                'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
             }
         }
     });
@@ -75,7 +76,8 @@ export function createCompetetiveConfig(matchId, team1, team2, team1Name, team2N
                 'game_mode': 1, 
                 'mp_do_warmup_period': 0,
                 'hostname': 'Brawl Gaming Server',
-                'mp_halftime_duration': '15'
+                'mp_halftime_duration': '15',
+                'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
             }
         }
     });
@@ -110,7 +112,8 @@ export function createDeathmatchConfig(matchId, team1, team2, team1Name, team2Na
                 'mp_endmatch_votenextmap': 0,
                 'mp_endmatch_votenextleveltime': 20,
                 'mp_endmatch_votenextmap_keepcurrent': 0,
-                'hostname': 'Brawl Gaming Server'
+                'hostname': 'Brawl Gaming Server',
+                'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
             }
         }
     });
@@ -159,7 +162,8 @@ export function create1vs1Config(matchId, team1, team2, team1Name, team2Name, ma
                 'cash_team_win_by_time_running_out_hostage': 2750,
                 'cash_team_win_by_time_running_out_bomb': 2750,
                 'mp_match_restart_delay': 300,
-                'hostname': 'Brawl Gaming Server'
+                'hostname': 'Brawl Gaming Server',
+                'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
             }
         }
     });
