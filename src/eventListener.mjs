@@ -74,7 +74,7 @@ export function mapEndEvent(event) {
 }
 
 export async function seriesEndEvent(event) {
-  const serverId = getServerId(event.matchId);
+  const serverId = getServerId(event.matchid);
   const matchResultPath = `${USER_DIR}csgo@${serverId}/csgo/${event.params.match_result_file}`;
   
   try {
@@ -88,13 +88,13 @@ export async function seriesEndEvent(event) {
     removeUnnecessaryData(matchResult);
   
     const matchEvent = {
-      matchId: event.matchId, 
-      params: matchResult 
+      match_id: event.matchid,
+      result: matchResult,
     }
   
     _sendEvent('series_end', matchEvent)
   
-    moveJsonMatchFileToBackupLocation(serverId, event.matchId)
+    moveJsonMatchFileToBackupLocation(serverId, event.matchid)
   } catch (error) {
     console.log(error);
   }
