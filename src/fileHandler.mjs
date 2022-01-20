@@ -1,8 +1,6 @@
 import * as createMatchConfig from './matchConfig.mjs'
 import fs from 'fs';
-import vdf from 'simple-vdf';
 import jsonschema from 'jsonschema';
-import glob from 'glob';
 
 export const USER_DIR = '/home/steam/';
 
@@ -18,10 +16,13 @@ export function validateRightFormatJSON(matchData){
           'matchid': {
               'type': 'string',
           },
-
           'team1': {
             'type': 'object',
             'properties': {
+              'teamId': {
+                'type': 'string',
+                'format': 'uuid'
+              },
               'teamName': {
                 'type': 'string'
               },
@@ -63,10 +64,13 @@ export function validateRightFormatJSON(matchData){
               }
             }
           },
-
           'team2': {
             'type': 'object',
             'properties': {
+              'teamId': {
+                'type': 'string',
+                'format': 'uuid'
+              },
               'teamName': {
                 'type': 'string'
               },
@@ -119,10 +123,10 @@ export function validateRightFormatJSON(matchData){
     };
 
     try {
-        return v.validate(matchData, matchCfgSchema).valid;
+      return v.validate(matchData, matchCfgSchema).valid;
     } catch(e) {
-        console.log(e);
-        return false;
+      console.log(e);
+      return false;
     }
 }
 //Create the match.cfg file with the right matchid and right players on right team and convert it to valve format
@@ -175,7 +179,7 @@ export function getResultFromJsonFile(filePath) {
 
 export function moveJsonMatchFileToBackupLocation(serverId, matchId) {
   const fileName = `get5_matchstats_${matchId}.json`;
-  const filePath = `${USER_DIR}csgo@${serverId}/csgo/${fileName}'`;
+  const filePath = `${USER_DIR}csgo@${serverId}/csgo/${fileName}`;
   
   createJsonBackupLocationIfNonExistent();
   const backupLocation = `${USER_DIR}backup_matchfiles/${fileName}`;
@@ -200,99 +204,6 @@ function createJsonBackupLocationIfNonExistent() {
     });
   }
 }
-
-
-/*************** REMOVE WHEN JSON WORKS ***************/
-// Converts valve format match result to string.
-export function getResultFromFile(filePath) {
-  return new Promise((resolve, reject) => {
-      fs.readFile(filePath, 'utf8', (err, data) => {
-          if (err) reject(err);
-
-          var result = vdf.parse(data);
-          resolve(result);
-      });
-  })
-}
-
-/*************** REMOVE WHEN JSON WORKS ***************/
-// Move match files to backup location
-// Remove match files
-export function moveMatchFiles(serverId, matchId) {
-  var fileName = USER_DIR+'csgo@'+serverId+'/csgo/get5_matchstats_'+matchId+'.cfg';
-  createBackupLocationIfNonExistent();
-  // Move file
-  fs.rename(fileName, USER_DIR+'/matchfiles/get5_matchstats_'+matchId+'.cfg', function(error){
-    if(error)
-      console.log(error);
-    });
-  // Delete unnecessary files
-  deleteUnecessaryMatchFiles(serverId);
-}
-
-/*************** REMOVE WHEN JSON WORKS ***************/
-// Delete unnecessary files
-function deleteUnecessaryMatchFiles(serverId) {
-  glob(USER_DIR+'csgo@'+serverId+'/csgo/get5_matchstats_*.cfg', function (err, files) {
-    // files is an array of filenames matching the wildcard (*).
-    if (err) {
-      console.log(err);
-    } else {
-      for (const file of files) {
-        fs.unlink(file, (err) => {
-          if(err) {
-            console.log(err);
-          }
-        })
-      }
-    }
- })
-   glob(USER_DIR+'csgo@'+serverId+'/csgo/get5_backup_match*.cfg', function (err, files) {
-     // files is an array of filenames matching the wildcard (*).
-     if (err) {
-       console.log(err);
-     } else {
-       for (const file of files) {
-         fs.unlink(file, (err) => {
-           if(err) {
-             console.log(err);
-           }
-         })
-       }
-     }
-  })
-  glob(USER_DIR+'csgo@'+serverId+'/csgo/backup_round*.txt', function (err, files) {
-    // files is an array of filenames matching the wildcard (*).
-    if (err) {
-      console.log(err);
-    } else {
-        for (const file of files) {
-          fs.unlink(file, (err) => {
-            if(err) {
-              console.log(err);
-            }
-          })
-        }
-      }
-   })
-}
-
-/*************** REMOVE WHEN JSON WORKS ***************/
-// Check if the directory exist
-// If not, create it
-function createBackupLocationIfNonExistent() {
-  var _dirPath = USER_DIR+'matchfiles';
-  if (!fs.existsSync(_dirPath)) {
-    // Folder absent
-    // Create folder
-    fs.mkdir(_dirPath, function (err) {
-      if (err) {
-        console.log(err);
-      }
-    });
-  }
-}
-
 
 /**
 * Convert team list of format ['id1', 'id2'] to {'id1': '', 'id2': ''}

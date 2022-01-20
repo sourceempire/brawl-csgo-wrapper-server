@@ -61,7 +61,7 @@ function handleGet5Events(get5Event) {
       eventListener.sendGoingLiveEvent(get5Event);
       break;
     case 'player_death':
-      eventListener.sendPlayerEvent(get5Event);
+      eventListener.sendPlayerDeathEvent(get5Event);
       break;
     case 'bomb_planted':
       eventListener.sendBombPlantedEvent(get5Event);

@@ -4,8 +4,6 @@ import bodyParser from 'body-parser';
 import sockjs from 'sockjs';
 import { validateRightFormatJSON } from './fileHandler.mjs';
 import * as serverHandler from './csgoServerHandler.mjs';
-import * as matchHandler from './matchHandler.mjs';
-import { isEmpty } from './utils.mjs';
 import * as auth from './auth.mjs';
 import * as csgoLogger from './csgoLogger.mjs';
 import * as eventListener from './eventListener.mjs';
@@ -64,18 +62,6 @@ app.post('/stopmatch', (req, res) => {
         res.send('{"succeeded": false, "errorcode": "invalidmatchid", "error": "Invalid match id"}');
     }
     
-});
-
-app.get('/getmatchresult', (req, res) => {
-    var matchid = req.query.matchid;
-    var result = matchHandler.getMatchResultFormated(matchid);
-    if (result === null) {
-        res.send('{"succeeded": false, "error": "No such match", "errorcode": "nomatch"}');
-    } else if (isEmpty(result)) {
-        res.send('{"succeeded": false, "error": "Match not finished", "errorcode": "matchongoing"}');
-    } else {
-        res.send(JSON.stringify({succeeded: true, matchresult: result}));
-    }
 });
 
 app.get('/eventsrequest', (req, res) => {
