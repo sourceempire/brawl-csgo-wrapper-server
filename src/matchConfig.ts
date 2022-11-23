@@ -1,4 +1,5 @@
-import { logaddress } from './constants.mjs';
+import { logaddress } from './constants';
+import { Get5Match, Get5PlayerSet } from './types/get5';
 
 
 const gameModes = {
@@ -126,45 +127,47 @@ export function createDeathmatchConfig(matchId, team1, team2, team1Name, team2Na
     };
 }
 
-export function create1vs1Config(matchId, team1, team2, team1Name, team2Name, map) {
-    console.log('HALLÅ')
-
-    return {
-        'match_title': `${team1Name} vs ${team2Name}`,
-        'matchid': matchId,
-        'clinch_series': false,
-        'num_maps': 1,
-        'players_per_team': 1, // required to auto start when all players joined
-        'skip_veto': true,
-        'side_type': 'always_knife', // Last time playing, weapons weren't dropped on knife-round
-        'maplist': [map],
-        'team1': {
-            'name': team1Name,
-            'players': team1
-        },
-        'team2':{
-            'name': team2Name,
-            'players': team2
-        },
-        // not sure if numbers or strings should be provided
-        'cvars': {
-            ...gameModes.wingman,
-            'hostname': 'Brawl Gaming Server',
-            'mp_halftime': '1',
-            'mp_maxrounds': '2',
-            'get5_remote_log_url': logaddress,
-            'get5_stop_command_enabled': '0',
-            
-            
-            
-
-            // BELOW NOT TESTED
-            'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
-            'mp_warmup_pausetimer': '0',
-            'mp_warmuptime': '300',
-            'mp_warmuptime_all_players_connected': '30', // Warmup time to use when all players have connected. 0 to disable.
-            'sm_practicemode_can_be_started': '0',
-            'mp_endmatch_votenextmap': '0'
-        }
-    };
-}
+export const create1vs1Config = (
+    matchId: string, 
+    team1: Get5PlayerSet,
+    team2: Get5PlayerSet, 
+    team1Name: string, 
+    team2Name: string, 
+    map: string
+): Get5Match => ({
+    match_title: `${team1Name} vs ${team2Name}`,
+    matchid: matchId,
+    clinch_series: false,
+    num_maps: 1,
+    players_per_team: 1, // required to auto start when all players joined
+    skip_veto: true,
+    side_type: 'always_knife', // Last time playing, weapons weren't dropped on knife-round
+    maplist: [map],
+    team1: {
+        name: team1Name,
+        players: team1
+    },
+    team2:{
+        name: team2Name,
+        players: team2
+    },
+    // not sure if numbers or strings should be provided
+    cvars: {
+        ...gameModes.wingman,
+        hostname: 'Brawl Gaming Server',
+        mp_halftime: 1,
+        mp_maxrounds: 2,
+        get5_remote_log_url: logaddress,
+        get5_stop_command_enabled: 0,
+        
+        
+    
+        // BELOW NOT TESTED
+        get5_stats_path_format: `get5_matchstats_${matchId}.json`,
+        mp_warmup_pausetimer: 0,
+        mp_warmuptime: 300,
+        mp_warmuptime_all_players_connected: 30, // Warmup time to use when all players have connected. 0 to disable.
+        sm_practicemode_can_be_started: 0,
+        mp_endmatch_votenextmap: 0
+    }
+})

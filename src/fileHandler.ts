@@ -1,16 +1,20 @@
-import * as createMatchConfig from './matchConfig.mjs'
+import * as createMatchConfig from './matchConfig'
 import fs from 'fs';
-import jsonschema from 'jsonschema';
+import jsonschema, { Schema } from 'jsonschema';
 
 export const USER_DIR = '/home/steam/';
 
 
+
+
 //Validates so JSON text from Brawl server is right.
 //TESTED: Validation is tested in file CSGOTest on brawl server.
-export function validateRightFormatJSON(matchData){
+export function validateRightFormatJSON(matchData: any) { // TODO -> fix interface for matchData
     var v = new jsonschema.Validator();
 
-    var matchCfgSchema = {
+    
+    var matchCfgSchema: Schema = {
+        'required': ['matchid', 'team1', 'team2', 'map', 'mode'],
         'type': 'object',
         'properties': {
           'matchid': {
@@ -118,7 +122,7 @@ export function validateRightFormatJSON(matchData){
         'mode': {
             'type': 'string',
         },
-        'required': ['matchid', 'team1', 'team2', 'map', 'mode']
+        
       }
     };
 
@@ -130,7 +134,7 @@ export function validateRightFormatJSON(matchData){
     }
 }
 //Create the match.cfg file with the right matchid and right players on right team and convert it to valve format
-export function createMatchCfg(matchData, serverId, matchId) {
+export function createMatchCfg(matchData: any, serverId: string, matchId: string) { // TODO -> fix interface for matchData
   const { teamName: team1Name, players: team1Players } = matchData.team1
   const { teamName: team2Name, players: team2Players } = matchData.team2
   
@@ -166,7 +170,7 @@ export function createMatchCfg(matchData, serverId, matchId) {
   
 }
 
-export function getResultFromJsonFile(filePath) {
+export function getResultFromJsonFile(filePath: string) {
   return new Promise((resolve, reject) => {
     if (!filePath.endsWith('.json')) {
       reject('file must be of type json');
@@ -177,12 +181,12 @@ export function getResultFromJsonFile(filePath) {
         return;
       } 
       
-      resolve(JSON.parse(data));
+      resolve(JSON.parse(data.toString())); // NOT TESTED, added toString()
     });
   })
 }
 
-export function moveJsonMatchFileToBackupLocation(serverId, matchId) {
+export function moveJsonMatchFileToBackupLocation(serverId: string, matchId: string) {
   const fileName = `get5_matchstats_${matchId}.json`;
   const filePath = `${USER_DIR}csgo@${serverId}/csgo/${fileName}`;
   
@@ -215,7 +219,7 @@ function createJsonBackupLocationIfNonExistent() {
 /**
 * Convert team list of format ['id1', 'id2'] to {'id1': '', 'id2': ''}
 */
-function teamListToObj(list) {
+function teamListToObj(list: string[]) {
     return list.reduce(
         (acc, id) => Object.assign(acc, {[id]: '' }),
         {});

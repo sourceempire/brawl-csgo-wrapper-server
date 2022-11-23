@@ -1,9 +1,9 @@
 
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 
-import * as serverHandler from './csgoServerHandler.mjs';
-import * as eventListener from './eventListener.mjs';
-import { logAddressPort } from './constants.mjs';
+import * as serverHandler from './csgoServerHandler';
+import * as eventListener from './eventListener';
+import { logAddressPort } from './constants';
 
 export function setupCSGOLogging() {
   var logger = express();
@@ -11,12 +11,11 @@ export function setupCSGOLogging() {
   
   logger.post('/csgolog', (req, res) => {
 
-    // TODO -> Refactor new events to what we need
-    console.log(JSON.stringify(JSON.parse(req.rawBody), null, 2))
+    console.log(JSON.stringify(JSON.parse(req.body), null, 2))
 
-    
-    const get5Events = extractGet5EventsFromCsgoEventString(req.rawBody)
-    get5Events.forEach(handleGet5Events)
+  
+    // const get5Events = extractGet5EventsFromCsgoEventString(rawBodyRequest.rawBody)
+    // get5Events.forEach(handleGet5Events)
     res.send();
   });
 
@@ -25,38 +24,8 @@ export function setupCSGOLogging() {
   });
 }
 
-function extractGet5EventsFromCsgoEventString(csgoEventString) {
-  const get5EventPrefix = 'get5_event:'
-  if (csgoEventString.includes(get5EventPrefix)) {
-    return csgoEventString.split(get5EventPrefix)
-      .filter((_, index) => index !== 0)
-      .filter(x => x !== '')
-      .map(parseGet5Event)
-      .filter(x => x !== null)
-  } else {
-    return [];
-  }
-}
-
-function parseGet5Event(get5String) {
-  let jsonNestedLevel = 0;
-  const get5TrimmedString = get5String.trim()
-  let i;
-
-  for (i = 0; i < get5TrimmedString.length; i++) {
-    if (get5TrimmedString[i] === '{') jsonNestedLevel++; 
-    else if (get5TrimmedString[i] === '}') jsonNestedLevel--;
-    if (jsonNestedLevel === 0) break;
-  }
-  try {
-    return JSON.parse(get5TrimmedString.substring(0, i+1))
-  } catch (error) {
-    console.log(get5String, error);
-    return null;
-  }
-}
-
-function handleGet5Events(get5Event) {
+// TODO -> update any to event interface, Get5 has the schema on the website
+function handleGet5Events(get5Event: Record<string, any>) {
   switch (get5Event.event) {
     case 'series_start':
       console.log(JSON.stringify(get5Event, null, 2))
@@ -100,11 +69,12 @@ function handleGet5Events(get5Event) {
   }
 }
 
-function rawBody(req, res, next) {
+function rawBody(req: Request, res: Response, next: NextFunction) {
   req.setEncoding('utf8');
-  req.rawBody = '';
+  req.body = '';
   req.on('data', function(chunk) {
-    req.rawBody += chunk;
+    console.log(chunk) // TODO ->  Might be able to parse json here due to how get5 sends data nowdays
+    req.body += chunk;
   });
   req.on('end', function(){
     next();
