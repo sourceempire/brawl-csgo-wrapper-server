@@ -1,17 +1,14 @@
 import * as createMatchConfig from './matchConfig.mjs'
 import fs from 'fs';
-import vdf from 'simple-vdf';
 import jsonschema from 'jsonschema';
-import glob from 'glob';
 
-var USER_DIR = '/home/steam/';
+export const USER_DIR = '/home/steam/';
+
 
 //Validates so JSON text from Brawl server is right.
 //TESTED: Validation is tested in file CSGOTest on brawl server.
 export function validateRightFormatJSON(matchData){
     var v = new jsonschema.Validator();
-
-    console.log(matchData);
 
     var matchCfgSchema = {
         'type': 'object',
@@ -19,10 +16,13 @@ export function validateRightFormatJSON(matchData){
           'matchid': {
               'type': 'string',
           },
-
           'team1': {
             'type': 'object',
             'properties': {
+              'teamId': {
+                'type': 'string',
+                'format': 'uuid'
+              },
               'teamName': {
                 'type': 'string'
               },
@@ -64,10 +64,13 @@ export function validateRightFormatJSON(matchData){
               }
             }
           },
-
           'team2': {
             'type': 'object',
             'properties': {
+              'teamId': {
+                'type': 'string',
+                'format': 'uuid'
+              },
               'teamName': {
                 'type': 'string'
               },
@@ -120,10 +123,10 @@ export function validateRightFormatJSON(matchData){
     };
 
     try {
-        return v.validate(matchData, matchCfgSchema).valid;
+      return v.validate(matchData, matchCfgSchema).valid;
     } catch(e) {
-        console.log(e);
-        return false;
+      console.log(e);
+      return false;
     }
 }
 //Create the match.cfg file with the right matchid and right players on right team and convert it to valve format
@@ -145,95 +148,57 @@ export function createMatchCfg(matchData, serverId, matchId) {
   else if(matchData.mode === 'deathmatch') {
       obj = createMatchConfig.createDeathmatchConfig(matchId, team1, team2, team1Name, team2Name, matchData.map);
   }
-  else if(matchData.mode === 'one vs one') {
+  else if(matchData.mode === 'one_vs_one') {
       obj = createMatchConfig.create1vs1Config(matchId, team1, team2, team1Name, team2Name, matchData.map);
   }
   else {
       throw 'Invalid game mode';
   }
-  fs.writeFile(USER_DIR+'csgo@'+serverId+'/csgo/match.cfg', obj, function(err) {
-      if (err) {
-          console.log('Error creating match.cfg', err);
-      }
-  });
-}
 
-// Converts valve format match result to string.
-export function getResultFromFile(filePath) {
-    return new Promise((resolve, reject) => {
-        fs.readFile(filePath, 'utf8', (err, data) => {
-            if (err) reject(err);
+  const matchDir = `${USER_DIR}csgo@${serverId}/csgo`
 
-            var result = vdf.parse(data);
-            resolve(result);
-        });
-    })
-}
 
-// Move match files to backup location
-// Remove match files
-export function moveMatchFiles(serverId, matchId) {
-  var fileName = USER_DIR+'csgo@'+serverId+'/csgo/get5_matchstats_'+matchId+'.cfg';
-  directoryExistence();
-  // Move file
-  fs.rename(fileName, USER_DIR+'/matchfiles/get5_matchstats_'+matchId+'.cfg', function(error){
-    if(error)
-      console.log(error);
-    });
-  // Delete unnecessary files
-  deleteUnecessaryMatchFiles(serverId);
-}
-
-// Delete unnecessary files
-function deleteUnecessaryMatchFiles(serverId) {
-  glob(USER_DIR+'csgo@'+serverId+'/csgo/get5_matchstats_*.cfg', function (err, files) {
-    // files is an array of filenames matching the wildcard (*).
-    if (err) {
-      console.log(err);
-    } else {
-      for (const file of files) {
-        fs.unlink(file, (err) => {
-          if(err) {
-            console.log(err);
-          }
-        })
-      }
+  fs.writeFile(`${matchDir}/match.json`, JSON.stringify(obj), (error) => {
+    if (error) {
+      console.log('Error creating match.cfg', error);
     }
- })
-   glob(USER_DIR+'csgo@'+serverId+'/csgo/get5_backup_match*.cfg', function (err, files) {
-     // files is an array of filenames matching the wildcard (*).
-     if (err) {
-       console.log(err);
-     } else {
-       for (const file of files) {
-         fs.unlink(file, (err) => {
-           if(err) {
-             console.log(err);
-           }
-         })
-       }
-     }
   })
-  glob(USER_DIR+'csgo@'+serverId+'/csgo/backup_round*.txt', function (err, files) {
-    // files is an array of filenames matching the wildcard (*).
-    if (err) {
-      console.log(err);
-    } else {
-        for (const file of files) {
-          fs.unlink(file, (err) => {
-            if(err) {
-              console.log(err);
-            }
-          })
-        }
-      }
-   })
+  
 }
 
-// Check if the directory exist
-// If not, create it
-function directoryExistence() {
-  var _dirPath = USER_DIR+'matchfiles';
+export function getResultFromJsonFile(filePath) {
+  return new Promise((resolve, reject) => {
+    if (!filePath.endsWith('.json')) {
+      reject('file must be of type json');
+    }
+    fs.readFile(filePath, (err, data) => {
+      if (err) {
+        reject(err);
+        return;
+      } 
+      
+      resolve(JSON.parse(data));
+    });
+  })
+}
+
+export function moveJsonMatchFileToBackupLocation(serverId, matchId) {
+  const fileName = `get5_matchstats_${matchId}.json`;
+  const filePath = `${USER_DIR}csgo@${serverId}/csgo/${fileName}`;
+  
+  createJsonBackupLocationIfNonExistent();
+  const backupLocation = `${USER_DIR}backup_matchfiles/${fileName}`;
+
+  // Moves file
+  fs.rename(filePath, backupLocation, function (error) {
+    if (error) console.log(error);
+    // TODO -> check if below function works when working with json instead of cfg
+    // deleteUnecessaryMatchFiles(serverId);
+  })
+}
+
+function createJsonBackupLocationIfNonExistent() {
+  const _dirPath = USER_DIR+'backup_matchfiles';
   if (!fs.existsSync(_dirPath)) {
     // Folder absent
     // Create folder
@@ -246,6 +211,7 @@ function directoryExistence() {
 }
 
 
+// if a non-empty string is provided as value, it will change the nick for that player (not tested)
 /**
 * Convert team list of format ['id1', 'id2'] to {'id1': '', 'id2': ''}
 */

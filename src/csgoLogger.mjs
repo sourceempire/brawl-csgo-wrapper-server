@@ -10,6 +10,11 @@ export function setupCSGOLogging() {
   logger.use(rawBody);
   
   logger.post('/csgolog', (req, res) => {
+
+    // TODO -> Refactor new events to what we need
+    console.log(JSON.stringify(JSON.parse(req.rawBody), null, 2))
+
+    
     const get5Events = extractGet5EventsFromCsgoEventString(req.rawBody)
     get5Events.forEach(handleGet5Events)
     res.send();
@@ -54,15 +59,16 @@ function parseGet5Event(get5String) {
 function handleGet5Events(get5Event) {
   switch (get5Event.event) {
     case 'series_start':
+      console.log(JSON.stringify(get5Event, null, 2))
       eventListener.sendSeriesStartEvent(get5Event)
-      // console.log(get5Event)
       break;
-    case 'going_live': 
+    case 'going_live':
+      console.log(JSON.stringify(get5Event, null, 2))
       serverHandler.setMatchStarted(get5Event['matchid']);
       eventListener.sendGoingLiveEvent(get5Event);
       break;
     case 'player_death':
-      eventListener.sendPlayerEvent(get5Event);
+      eventListener.sendPlayerDeathEvent(get5Event);
       break;
     case 'bomb_planted':
       eventListener.sendBombPlantedEvent(get5Event);
@@ -74,15 +80,19 @@ function handleGet5Events(get5Event) {
       eventListener.bombExplodedEvent(get5Event);
       break;
     case 'round_end':
+      console.log(JSON.stringify(get5Event, null, 2))
       eventListener.roundEndEvent(get5Event);
       break;
     case 'side_swap':
+      console.log(JSON.stringify(get5Event, null, 2))
       eventListener.sideSwapEvent(get5Event);
       break;
     case 'map_end':
+      console.log(JSON.stringify(get5Event, null, 2))
       eventListener.mapEndEvent(get5Event);
       break;
     case 'series_end':
+      console.log(JSON.stringify(get5Event, null, 2))
       eventListener.seriesEndEvent(get5Event);
       break;
     default:
