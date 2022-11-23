@@ -5,27 +5,19 @@ import * as fileHandler from './fileHandler.mjs';
 import * as matchHandler from './matchHandler.mjs';
 import schedule from 'node-schedule';
 
-import { logAddressPort } from './constants.mjs';
+// import { logAddressPort } from './constants.mjs';
 
 dotenv.config();
-
 
 const csgoServerPath = '/home/steam/csgo-multiserver';
 const csgoServerPathFake = '/home/steam/fake-csgo-server'; 
 const serverAddress = process.env.SERVER_ADDRESS;
 
-
-//NEEDS TO HAVE A SPACE AT THE END TO BE DOUBLE QUOTED IN TERMINAL.
-const logaddress = 'http://localhost:'+logAddressPort+'/csgolog ';
-
-
 const spawnOptions = {
-  //Change this to csgoServerPath to start real games*/
     cwd:  process.argv.includes('fake') ? csgoServerPathFake : csgoServerPath,
     stdio: ['inherit'], // attatch tty (csgo-multiserver requirement)
     windowsVerbatimArguments: true,
 };
-
 
 var servers = {};
 for (var i = 1; i <= 5; i++) { 
@@ -63,12 +55,10 @@ export function serverUpdating() {
     return isServerUpdating;
 }
 
-//Building the right link for a specific server
 export function buildSteamJoinLink(serverAddress,port) {
     return 'steam://connect/'+serverAddress+':'+port;
 }
 
-//Returns the complete link
 export function getJoinLink(matchId) {
     for (var serverId of Object.keys(servers)) {
         if (servers[serverId].currentMatchId == matchId) {
@@ -77,17 +67,14 @@ export function getJoinLink(matchId) {
     }
 }
 
-//Sets a matchId to server called when match starts.
 export function setMatchId(serverId, matchId) {
     servers[serverId].currentMatchId = matchId;
 }
 
-//Clears a servers matchId function called when match is over.
 export function clearMatchId(serverId) {
     servers[serverId].currentMatchId = null;
 }
 
-//Get function that returns a specific servers matchId.
 export function getMatchId(serverId) {
     return servers[serverId].currentMatchId;
 }
@@ -104,7 +91,6 @@ export function setMatchStarted(matchId) {
     }
 }
 
-//Get function that returns id of first available server.
 export function getAvailableServer() {
     var keys = Object.keys(servers);
     for (var i = 0; i < keys.length; i++) {
@@ -117,10 +103,11 @@ export function getAvailableServer() {
     return null;
 }
 
-//Creates match
+// Creates match
 export function startNewMatch(matchData) {
     const serverId = getAvailableServer();
     if (serverId === null) {
+        console.log('No available servers')
         return null;
     }
     const matchId = matchHandler.newMatch(matchData.matchid);
@@ -151,16 +138,14 @@ export function startNewMatch(matchData) {
 
 function setTeams(serverId, team1, team2) {
     if (team1.teamName === team2.teamName) {
-        team1.teamName = team1.teamName + '#1'
-        team2.teamName = team2.teamName + '#2'
+        team1.teamName = `${team1.teamName} 1`;
+        team2.teamName = `${team2.teamName} 2`;
     }
 
-    servers[serverId].teams = {
-        [team1.teamId]: team1, 
-        [team2.teamId]: team2
-    }
+    servers[serverId].teams = { team1, team2 }
 }
 
+// TODO -> needs to take in team1 or team2 instead of teamName.
 export function getTeamId(matchId, teamName) {
     const serverId = getServerId(matchId)
     if (servers[serverId]) {
@@ -211,10 +196,9 @@ export function startCSGOServer(serverId) {
             setTimeout(() => {
                 try {
                     console.log('Starting get5');
-                    const load = spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_loadmatch', 'match.cfg'], spawnOptions);
+                    const load = spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_loadmatch', 'match.json'], spawnOptions);
                     
                     load.on('close', () => {
-                        spawn('./csgo-server',  ['@'+ serverId, 'exec', 'logaddress_add_http', logaddress], spawnOptions);
                         console.log('started match');
                     })
                     load.on('error', (error) => {

@@ -148,17 +148,22 @@ export function createMatchCfg(matchData, serverId, matchId) {
   else if(matchData.mode === 'deathmatch') {
       obj = createMatchConfig.createDeathmatchConfig(matchId, team1, team2, team1Name, team2Name, matchData.map);
   }
-  else if(matchData.mode === 'one vs one') {
+  else if(matchData.mode === 'one_vs_one') {
       obj = createMatchConfig.create1vs1Config(matchId, team1, team2, team1Name, team2Name, matchData.map);
   }
   else {
       throw 'Invalid game mode';
   }
-  fs.writeFile(USER_DIR+'csgo@'+serverId+'/csgo/match.cfg', obj, function(err) {
-      if (err) {
-          console.log('Error creating match.cfg', err);
-      }
-  });
+
+  const matchDir = `${USER_DIR}csgo@${serverId}/csgo`
+
+
+  fs.writeFile(`${matchDir}/match.json`, JSON.stringify(obj), (error) => {
+    if (error) {
+      console.log('Error creating match.cfg', error);
+    }
+  })
+  
 }
 
 export function getResultFromJsonFile(filePath) {
@@ -205,6 +210,8 @@ function createJsonBackupLocationIfNonExistent() {
   }
 }
 
+
+// if a non-empty string is provided as value, it will change the nick for that player (not tested)
 /**
 * Convert team list of format ['id1', 'id2'] to {'id1': '', 'id2': ''}
 */
