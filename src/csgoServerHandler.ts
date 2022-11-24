@@ -1,8 +1,8 @@
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import dotenv from 'dotenv';
 
-import * as fileHandler from './fileHandler';
-import * as matchHandler from './matchHandler';
+import * as fileHandler from './fileHandler.js';
+import * as matchHandler from './matchHandler.js';
 import schedule from 'node-schedule';
 
 interface Server {

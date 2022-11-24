@@ -1,6 +1,7 @@
-import * as createMatchConfig from './matchConfig'
+import * as createMatchConfig from './matchConfig.js'
 import fs from 'fs';
 import jsonschema, { Schema } from 'jsonschema';
+import { Get5MatchTeam } from './types/get5.js';
 
 export const USER_DIR = '/home/steam/';
 
@@ -137,23 +138,29 @@ export function validateRightFormatJSON(matchData: any) { // TODO -> fix interfa
 export function createMatchCfg(matchData: any, serverId: string, matchId: string) { // TODO -> fix interface for matchData
   const { teamName: team1Name, players: team1Players } = matchData.team1
   const { teamName: team2Name, players: team2Players } = matchData.team2
-  
-  // convert arrays to maps
-  var team1 = teamListToObj(team1Players);
-  var team2 = teamListToObj(team2Players);
+
+  const team1: Get5MatchTeam = {
+    name: team1Name,
+    players: teamListToObj(team1Players)
+  }
+
+  const team2: Get5MatchTeam = {
+    name: team2Name,
+    players: teamListToObj(team2Players)
+  }
 
   var obj;
   if (matchData.mode === 'competitive') {
-      obj = createMatchConfig.createCompetetiveConfig(matchId, team1, team2, team1Name, team2Name, matchData.map);
+      obj = createMatchConfig.createCompetetiveConfig(matchId, team1, team2, matchData.map);
   }
   else if(matchData.mode === 'wingman') {
-      obj = createMatchConfig.createWingmanConfig(matchId, team1, team2, team1Name, team2Name, matchData.map);
+      obj = createMatchConfig.createWingmanConfig(matchId, team1, team2, matchData.map);
   }
   else if(matchData.mode === 'deathmatch') {
-      obj = createMatchConfig.createDeathmatchConfig(matchId, team1, team2, team1Name, team2Name, matchData.map);
+      obj = createMatchConfig.createDeathmatchConfig(matchId, team1, team2, matchData.map);
   }
   else if(matchData.mode === 'one_vs_one') {
-      obj = createMatchConfig.create1vs1Config(matchId, team1, team2, team1Name, team2Name, matchData.map);
+      obj = createMatchConfig.create1vs1Config(matchId, team1, team2, matchData.map);
   }
   else {
       throw 'Invalid game mode';

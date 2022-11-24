@@ -2,11 +2,11 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
 import sockjs from 'sockjs';
-import { validateRightFormatJSON } from './fileHandler';
-import * as serverHandler from './csgoServerHandler';
-import * as auth from './auth';
-import * as csgoLogger from './csgoLogger';
-import * as eventListener from './eventListener';
+import { validateRightFormatJSON } from './fileHandler.js';
+import * as serverHandler from './csgoServerHandler.js';
+import * as auth from './auth.js';
+import * as csgoLogger from './csgoLogger.js';
+import * as eventListener from './eventListener.js';
 
 dotenv.config()
 
@@ -21,7 +21,6 @@ app.use(auth.checkAuth);
 serverHandler.checkIfUpdateNeeded();
 
 app.post('/startmatch',  (req, res) => {
-  console.log("HALLÅ")
     var matchData = req.body;
     if (serverHandler.serverUpdating()) {
         res.send('{"succeeded": false, "error": "Server busy", "errorcode": "serverbusy"}');

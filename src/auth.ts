@@ -45,10 +45,8 @@ var allowedOrigins = ['http://localhost:8080', 'https://api.brawlgaming.com', 'h
 export function cors(req: Request, res: Response, next: NextFunction) {
   var origin = req.headers.origin;
 
-  if (!origin) return;
-
-  if (allowedOrigins.indexOf(origin) != -1){
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  if (allowedOrigins.indexOf(origin || "") != -1){
+    res.setHeader('Access-Control-Allow-Origin', origin || "");
   } else {
     res.setHeader('Access-Control-Allow-Origin', 'https://api.brawlgaming.com');
   }

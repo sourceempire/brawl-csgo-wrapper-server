@@ -1,9 +1,9 @@
-import { getTeamId } from './csgoServerHandler';
-import { finishMatch } from './csgoServerHandler';
-import { getServerId } from './csgoServerHandler';
-import { moveJsonMatchFileToBackupLocation } from './fileHandler';
-import { getResultFromJsonFile } from './fileHandler';
-import { USER_DIR } from './fileHandler';
+import { getJoinLink, getTeamId } from './csgoServerHandler.js';
+import { finishMatch } from './csgoServerHandler.js';
+import { getServerId } from './csgoServerHandler.js';
+import { moveJsonMatchFileToBackupLocation } from './fileHandler.js';
+import { getResultFromJsonFile } from './fileHandler.js';
+import { USER_DIR } from './fileHandler.js';
 
 import {Connection} from "sockjs";
 
@@ -41,6 +41,7 @@ export function sendSeriesStartEvent(event: any) { // TODO -> refactor acording 
   _sendEvent('series_start', {
     matchid: event.matchid,
     event: event.event,
+    joinLink: getJoinLink(event.matchid),
   });
 }
 
