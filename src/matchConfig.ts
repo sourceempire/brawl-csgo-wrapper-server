@@ -1,5 +1,5 @@
 import { logaddress } from './constants.js';
-import { Get5Match, Get5MatchTeam, Get5PlayerSet } from './types/get5';
+import { Get5Match, Get5MatchTeam } from './types/config';
 
 
 const gameModes = {
@@ -129,8 +129,8 @@ export function create1vs1Config(matchId: string, team1: Get5MatchTeam, team2: G
             get5_hostname_format: 'Brawl Gaming: {TEAM1} vs {TEAM2}',
             get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',
             mp_halftime_duration: 15,
-            get5_stats_path_format: '',
-            get5_debug: 1,
+            get5_stats_path_format: 'matchstats_{MATCHID}.json',
+
             // BELOW NOT TESTED
     
            

@@ -41,3 +41,5 @@ export interface Get5Match {
     favored_percentage_text?: string
     cvars?: { [key: string]: string | number } 
 }
+
+

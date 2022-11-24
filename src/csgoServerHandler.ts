@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import * as fileHandler from './fileHandler.js';
 import * as matchHandler from './matchHandler.js';
 import schedule from 'node-schedule';
+import { Team } from './types/event/index.js';
 
 interface Server {
     available: boolean,
@@ -155,11 +156,8 @@ function setTeams(serverId: string, team1: any, team2: any) { // TODO -> add int
     servers[serverId].teams = { team1, team2 }
 }
 
-type TeamReference = "team1" | "team2"
-
-
 // TODO -> test this
-export function getTeamId(matchId: string, team: TeamReference) {
+export function getTeamId(matchId: string, team: Team) {
     const serverId = getServerId(matchId)
     
     if (!serverId) return;

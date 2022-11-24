@@ -1,7 +1,7 @@
 import * as createMatchConfig from './matchConfig.js'
 import fs from 'fs';
 import jsonschema, { Schema } from 'jsonschema';
-import { Get5MatchTeam } from './types/get5.js';
+import { Get5MatchTeam } from './types/config/index.js';
 
 export const USER_DIR = '/home/steam/';
 
