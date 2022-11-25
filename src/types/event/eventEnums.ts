@@ -29,7 +29,7 @@ export enum LiveEventName {
     ROUND_MVP = "round_mvp",
     GRENADE_THROWN = "grenade_thrown",
     PLAYER_DEATH = "player_death",
-    HEGRENADE_THROWN = "hegrenade_detonated",
+    HEGRENADE_DETONATED = "hegrenade_detonated",
     MOLOTOV_DETONATED = "molotov_detonated",
     FLASHBANG_DETONATED = "flashbang_detonated",
     SMOKEGRENADE_DETONATED = "smokegrenade_detonated",
