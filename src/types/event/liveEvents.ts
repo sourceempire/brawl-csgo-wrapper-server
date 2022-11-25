@@ -103,26 +103,47 @@ interface DamagingGrenadeDetonationEvent extends GrenadeDetonatedEvent {
     damage_friendlies: number
 }
 
+/**
+ * Fired when an HE grenade detonates. player describes who threw the HE and victims who 
+ * were affected. weapon is always an HE grenade.
+ */
 export interface HEGrenadeDetonatedEvent extends DamagingGrenadeDetonationEvent {
     event: LiveEventName.HEGRENADE_DETONATED
     victims: Victim[]
 }
 
+/**
+ * Fired when a molotov grenade expires. player describes who threw the molotov and victims 
+ * who were affected. weapon is always a molotov grenade. Note that round_time reflects the 
+ * time at which the grenade detonated (started burning).
+ */
 export interface MolotovDetonated extends DamagingGrenadeDetonationEvent {
     event: LiveEventName.MOLOTOV_DETONATED
     victims: Victim[]
 }
 
+/**
+ * Fired when a flash bang grenade detonates. player describes who threw the flash bang and 
+ * victims who were affected. weapon is always a flash bang grenade.
+ */
 export interface FlashBangDetonated extends GrenadeDetonatedEvent {
     event: LiveEventName.FLASHBANG_DETONATED
     victims: Victim[]
 }
 
+/**
+ * Fired when an smoke grenade expires. player describes who threw the grenade. weapon is 
+ * always a smoke grenade.
+ */
 export interface SmokeGrenadeDetonated extends GrenadeDetonatedEvent {
     event: LiveEventName.SMOKEGRENADE_DETONATED
     extinguished_molotov: true
 }
 
+/**
+ * Fired when a decoy starts making noise. player describes who threw the grenade. weapon is 
+ * always a decoy grenade.
+ */
 export interface DecoyStartedEvent extends GrenadeDetonatedEvent {
     event: LiveEventName.DECOYGRENADE_STARTED
 }
@@ -135,17 +156,26 @@ interface BombEvent extends LiveEvent {
     site: BombSite
 }
 
+/**
+ * Fired when the bomb is planted. player describes who planted the bomb.
+ */
 export interface BombPlantedEvent extends BombEvent {
     event: LiveEventName.BOMB_PLANTED
     player: Player
 }
 
+/**
+ * Fired when the bomb is defused. player describes who defused the bomb.
+ */
 export interface BombDefusedEvent extends BombEvent {
     event: LiveEventName.BOMB_DEFUSED
     player: Player
     bomb_time_remaining:  number
 }
 
+/**
+ * Fired when the bomb explodes.
+ */
 export interface BombExplodedTime extends BombEvent {
     event: LiveEventName.BOMB_EXPLODED
 }
