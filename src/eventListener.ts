@@ -5,14 +5,16 @@ import { moveJsonMatchFileToBackupLocation } from './fileHandler.js';
 import { getResultFromJsonFile } from './fileHandler.js';
 import { USER_DIR } from './fileHandler.js';
 import * as serverHandler from './csgoServerHandler.js';
-import * as eventListener from './eventListener.js';
 
 import {Connection} from "sockjs";
 
-import { BombDefusedEvent, BombExplodedEvent, BombPlantedEvent, Get5Event, Get5EventName, GoingLiveEvent, MapResultEvent, PlayerDeathEvent, RoundEndEvent, SeriesInitEvent, SeriesResultEvent } from './types/event/index.js';
+import { BombDefusedEvent, BombExplodedEvent, BombPlantedEvent, Get5Event, Get5EventName, GoingLiveEvent, MapResultEvent, MatchId, Player, PlayerConnectedEvent, PlayerDeathEvent, RoundEndEvent, SeriesInitEvent, SeriesResultEvent, Team } from './types/event/index.js';
+import { SteamID } from './types/config/index.js';
+import { match } from 'assert';
 
 const sockets: Connection[] = [];
 const unsentEvents: any[] = []; // TODO -> create type for unsentEvents
+const connectedPlayers: Record<MatchId, SteamID[]> = {}
 
 function sendEvent(event: any, data: any) { // TODO -> create type for event and data
   let toSend = {...data, event: event};
@@ -49,17 +51,40 @@ export function handleSeriesStartEvent(event: SeriesInitEvent) { // TODO -> refa
   });
 }
 
-export function handleGoingLiveEvent(event: any) { // TODO -> refactor acording to new get5 update
-  sendEvent('going_live', {
-    matchid: event.matchid,
-    event: event.event,
-    teamSides: {
-      T: getTeamId(event.matchid, event.params.team_sides.T),
-      CT: getTeamId(event.matchid, event.params.team_sides.CT)
-    },
-    mapNumber: event.params.map_number,
-    mapName: event.params.map_name,
-  });
+export function handleGoingLiveEvent(event: GoingLiveEvent) { // TODO -> refactor acording to new get5 update
+  serverHandler.setMatchStarted(event.matchid);
+  // sendEvent('going_live', {
+  //   matchid: event.matchid,
+  //   event: event.event,
+  //   teamSides: {
+  //     T: getTeamId(event.matchid, event.params.team_sides.T),
+  //     CT: getTeamId(event.matchid, event.params.team_sides.CT)
+  //   },
+  //   mapNumber: event.params.map_number,
+  //   mapName: event.params.map_name,
+  // });
+}
+
+function handlePlayerConnectedEvent(event: PlayerConnectedEvent) {
+  console.log({event})
+
+  if (!connectedPlayers[event.matchid]) {
+    connectedPlayers[event.matchid] = []
+  }
+
+  connectedPlayers[event.matchid].push(event.player.steamid)
+
+  const team1Players = serverHandler.getPlayers(event.matchid, Team.TEAM1)
+  const team2Players = serverHandler.getPlayers(event.matchid, Team.TEAM2)
+
+  const isTeam1Connected = team1Players.every((steamId) => connectedPlayers[event.matchid].includes(steamId))
+  const isTeam2Connected = team1Players.every((steamId) => connectedPlayers[event.matchid].includes(steamId))
+
+  console.log({team1Players, team2Players, isTeam1Connected, isTeam2Connected})
+
+  if (isTeam1Connected && isTeam2Connected) {
+    serverHandler.startMatch(event.matchid)
+  }
 }
 
 export function handlePlayerDeathEvent(event: PlayerDeathEvent) { // TODO -> refactor acording to new get5 update
@@ -145,13 +170,18 @@ export function handleMapResultEvent(event: MapResultEvent) { // TODO -> refacto
 export async function handleSeriesEndEvent(event: SeriesResultEvent) { // TODO -> refactor acording to new get5 update
   const serverId = getServerId(event.matchid);
 
-  // if (!serverId) throw Error("serverId was not found")
-
-  // const matchResultPath = `${USER_DIR}csgo@${serverId}/csgo/${event.params.match_result_file}`;
+  const matchResultPath = `${USER_DIR}csgo@${serverId}/csgo/matchstats_${event.matchid}.json`;
   
-  // try {
-  //   const matchResult = await getResultFromJsonFile(matchResultPath)
+  try {
+    const matchResult = await getResultFromJsonFile(matchResultPath)
     
+    console.log(matchResult)
+
+    finishMatch(serverId, matchResult);
+  } catch (error) {
+    console.log(error);
+  }
+ 
   //   setSeriesData(event.matchid, matchResult);
   //   setMapsData(event.matchid, matchResult);
   //   removeUnnecessaryData(matchResult);
@@ -286,32 +316,34 @@ export function sendMatchError(error: any) { // TODO -> create interface for err
 export function handleGet5Event(get5Event: Get5Event) {
   switch (get5Event.event) {
     case Get5EventName.SERIES_START:
-      eventListener.handleSeriesStartEvent(get5Event as SeriesInitEvent)
+      handleSeriesStartEvent(get5Event as SeriesInitEvent)
+      break;
+    case Get5EventName.PLAYER_CONNECTED:
+      handlePlayerConnectedEvent(get5Event as PlayerConnectedEvent)
       break;
     case Get5EventName.GOING_LIVE:
-      serverHandler.setMatchStarted(get5Event.matchid);
-      eventListener.handleGoingLiveEvent(get5Event as GoingLiveEvent);
+      handleGoingLiveEvent(get5Event as GoingLiveEvent);
       break;
     case Get5EventName.PLAYER_DEATH:
-      eventListener.handlePlayerDeathEvent(get5Event as PlayerDeathEvent);
+      handlePlayerDeathEvent(get5Event as PlayerDeathEvent);
       break;
     case Get5EventName.BOMB_PLANTED:
-      eventListener.handleBombPlantedEvent(get5Event as BombPlantedEvent);
+      handleBombPlantedEvent(get5Event as BombPlantedEvent);
       break;
     case Get5EventName.BOMB_DEFUSED:
-      eventListener.handleBombDefusedEvent(get5Event as BombDefusedEvent);
+      handleBombDefusedEvent(get5Event as BombDefusedEvent);
       break;
     case Get5EventName.BOMB_EXPLODED:
-      eventListener.handleBombExplodedEvent(get5Event as BombExplodedEvent);
+      handleBombExplodedEvent(get5Event as BombExplodedEvent);
       break;
     case Get5EventName.ROUND_END:
-      eventListener.handleRoundEndEvent(get5Event as RoundEndEvent);
+      handleRoundEndEvent(get5Event as RoundEndEvent);
       break;
     case Get5EventName.MAP_RESULT:
-      eventListener.handleMapResultEvent(get5Event as MapResultEvent);
+      handleMapResultEvent(get5Event as MapResultEvent);
       break;
     case Get5EventName.SERIES_END:
-      eventListener.handleSeriesEndEvent(get5Event as SeriesResultEvent);
+      handleSeriesEndEvent(get5Event as SeriesResultEvent);
       break;
     default: 
       console.debug("Event not caught in handleGet5Event: ", get5Event)

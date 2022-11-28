@@ -1,6 +1,11 @@
 import { Get5EventName } from "./eventEnums";
 
 /**
+ * UUID
+ */
+export type MatchId = string;
+
+/**
  * The map number in the series, starting at 0.
  */
 export type MapNumber = number;
@@ -73,7 +78,6 @@ export enum GameState {
     POST_GAME= "post_game",
 }
 
-
 export enum Side {
     CT = "ct",
     T = "t",
@@ -97,12 +101,10 @@ export enum SayCommand {
     SAY_TEAM = "say_team" 
 }
 
-
 export interface Winner {
     side: Side
     team: Team
 }
-
 
 export interface Player {
     user_id: UserId,

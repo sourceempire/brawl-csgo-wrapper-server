@@ -132,8 +132,6 @@ export function create1vs1Config(matchId: string, team1: Get5MatchTeam, team2: G
             get5_stats_path_format: 'matchstats_{MATCHID}.json',
 
             // BELOW NOT TESTED
-    
-           
             get5_demo_path: 'demos/{DATE}/',
             sm_practicemode_can_be_started: 0,
         }

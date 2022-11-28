@@ -91,7 +91,11 @@ export function getMatchId(serverId: string) {
 }
 
 export function getServerId(matchId: string) {
-    return Object.keys(servers).find(key => servers[key].currentMatchId === matchId)
+    const serverId = Object.keys(servers).find(key => servers[key].currentMatchId === matchId)
+
+    if (!serverId) throw Error(`No server for matchId: ${matchId}`)
+
+    return serverId
 }
 
 export function setMatchStarted(matchId: string) {
@@ -159,20 +163,36 @@ function setTeams(serverId: string, team1: any, team2: any) { // TODO -> add int
 // TODO -> test this
 export function getTeamId(matchId: string, team: Team) {
     const serverId = getServerId(matchId)
-    
-    if (!serverId) return;
 
     if (servers[serverId]) {
         return servers[serverId].teams[team].teamId
     }
 } 
 
+
+export function getPlayers(matchId: string, team: Team) {
+    const serverId = getServerId(matchId)
+
+    return servers[serverId].teams[team].players
+}
+
+export function startMatch(matchId: string) {
+    const serverId = getServerId(matchId)
+    //TODO -> send a chat message that the match will start in x seconds.
+    //sm_csay Sends a centered message to all players.
+
+    const load = spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_forceready'], spawnOptions);
+
+    load.on("close", () => {
+        console.log('started match');
+    })
+}
+
 //Stop ongoing match
 export function stopMatch(matchId: string) {
     console.log('stopping match');
     for (const serverId of Object.keys(servers)) {
         if (servers[serverId].currentMatchId === matchId) {
-            console.log('server id: ' + serverId);
             stopCSGOServer(serverId);
             clearMatchId(serverId);
         }
@@ -212,7 +232,7 @@ export function startCSGOServer(serverId: string) {
                         const load = spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_loadmatch', 'match.json'], spawnOptions);
                         
                         load.on('close', () => {
-                            console.log('started match');
+                            console.log(`started server: ${serverId}`);
                         })
                         load.on('error', (error) => {
                             console.log(error);
@@ -241,15 +261,12 @@ export function endMatch(serverId: string) {
 //Sends commands for stopping server
 export function stopCSGOServer(serverId: string) {
     try{
-        setTimeout(function() {
-            console.log('Stopping server');
-            spawn('./csgo-server', ['@' + serverId, 'stop'], spawnOptions);
-            servers[serverId].available = true;
-            servers[serverId].started = false;
-            servers[serverId].currentMatchId = null; 
-            servers[serverId].teams = null;   
-        }, 15*1000);
-
+        console.log('Stopping server');
+        spawn('./csgo-server', ['@' + serverId, 'stop'], spawnOptions);
+        servers[serverId].available = true;
+        servers[serverId].started = false;
+        servers[serverId].currentMatchId = null; 
+        servers[serverId].teams = null;   
     } catch(e){
         console.log('Failed to stop server!', e);
     }
