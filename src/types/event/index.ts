@@ -86,6 +86,19 @@ export enum Team {
     TEAM2 = "team2"
 }
 
+export enum PauseType {
+    TACTIVAL = "tactical", 
+    TECHNICAL = "technical", 
+    ADMIN = "admin", 
+    BACKUP = "backup"
+}
+
+export enum SayCommand {
+    SAY = "say", 
+    SAY_TEAM = "say_team" 
+}
+
+
 export interface Winner {
     side: Side
     team: Team
@@ -129,9 +142,9 @@ export interface DamageGrenadeVictim extends Victim {
 }
 
 
-
 export interface Get5Event {
     event: SeriesFlowEventName | MapFlowEventName | LiveEventName | ClientActionEventName
+    matchid: string;
 }
 
 export * from "./eventEnums"
