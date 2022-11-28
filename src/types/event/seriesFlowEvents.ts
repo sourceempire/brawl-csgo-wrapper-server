@@ -4,7 +4,7 @@ import {
     Get5Event,  
     MapNumber, 
     RoundNumber, 
-    SeriesFlowEventName,
+    Get5EventName,
     Side, 
     Team, 
     Winner 
@@ -19,7 +19,7 @@ import {
  * Fired when the game state changes.
  */
 export interface GameStateChangedEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.GAME_STATE_CHANGED
+    event: Get5EventName.GAME_STATE_CHANGED
     new_state: GameState
     old_state: GameState
 }
@@ -28,7 +28,7 @@ export interface GameStateChangedEvent extends SeriesFlowEvent {
  * Fired when the server attempts to load a match config.
  */
 export interface PreLoadMatchConfigEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.PRELOAD_MATCH_CONFIG
+    event: Get5EventName.PRELOAD_MATCH_CONFIG
     filename: string
 }
 
@@ -36,7 +36,7 @@ export interface PreLoadMatchConfigEvent extends SeriesFlowEvent {
  * Fired when a match config fails to load.
  */
 export interface LoadMatchConfigFailedEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.MATCH_CONFIG_LOAD_FAIL
+    event: Get5EventName.MATCH_CONFIG_LOAD_FAIL
     reason: string
 }
 
@@ -44,7 +44,7 @@ export interface LoadMatchConfigFailedEvent extends SeriesFlowEvent {
  * Fired when a series is started after loading a match config.
  */
 export interface SeriesInitEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.SERIES_START
+    event: Get5EventName.SERIES_START
     matchid: string
     team1_name: string
     team2_name: string
@@ -54,7 +54,7 @@ export interface SeriesInitEvent extends SeriesFlowEvent {
  * Fired when the map ends.
  */
 export interface MapResultEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.MAP_RESULT
+    event: Get5EventName.MAP_RESULT
     matchid: string
     map_number: MapNumber
     team1_score: number
@@ -66,7 +66,7 @@ export interface MapResultEvent extends SeriesFlowEvent {
  * Fired when a series is over.
  */
 export interface SeriesResultEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.SERIES_END
+    event: Get5EventName.SERIES_END
     matchid: string
     team1_series_score: number
     team2_series_score: number
@@ -78,7 +78,7 @@ export interface SeriesResultEvent extends SeriesFlowEvent {
  * Fired when a side is picked by a team.
  */
 export interface SidePickedEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.SIDE_PICKED
+    event: Get5EventName.SIDE_PICKED
     matchid: string
     team: Team
     map_name: string
@@ -90,7 +90,7 @@ export interface SidePickedEvent extends SeriesFlowEvent {
  * Fired when a team picks a map.
  */
 export interface MapPickedEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.MAP_PICKED
+    event: Get5EventName.MAP_PICKED
     matchid: string
     team: Team
     map_name: string
@@ -101,7 +101,7 @@ export interface MapPickedEvent extends SeriesFlowEvent {
  * Fired when a team vetos a map.
  */
 export interface MapVetoedEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.MAP_VETOED
+    event: Get5EventName.MAP_VETOED
     matchid: string
     team: Team
     map_name: string
@@ -113,7 +113,7 @@ export interface MapVetoedEvent extends SeriesFlowEvent {
  * round the backup was requested during.
  */
 export interface BackupRestoreEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.BACKUP_RESTORE
+    event: Get5EventName.BACKUP_RESTORE
     matchid: string
     map_number: MapNumber
     round_number: RoundNumber
@@ -125,7 +125,7 @@ export interface BackupRestoreEvent extends SeriesFlowEvent {
  * if no demo was recorded.
  */
 export interface DemoFinishedEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.DEMO_FINISHED
+    event: Get5EventName.DEMO_FINISHED
     matchid: string
     map_number: MapNumber
     filename: DemoFilename
@@ -139,7 +139,7 @@ export interface DemoFinishedEvent extends SeriesFlowEvent {
  * example: 1324_map_0_de_nuke.dem
  */
 export interface DemoUploadEndedEvent extends SeriesFlowEvent {
-    event: SeriesFlowEventName.DEMO_UPLOAD_ENDED
+    event: Get5EventName.DEMO_UPLOAD_ENDED
     matchid: string
     map_number: MapNumber
     filename: DemoFilename

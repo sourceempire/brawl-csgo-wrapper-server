@@ -1,5 +1,5 @@
 import { GameState, Get5Event, MapNumber, PauseType, Side, Team } from ".";
-import { MapFlowEventName } from "./eventEnums";
+import { Get5EventName } from "./eventEnums";
 
 /**
  * Events the occur in relation to a map pick or match-events on a map.
@@ -18,21 +18,21 @@ interface PauseEvent extends MapFlowEvent {
  * Fired when the match is paused.
  */
 export interface MatchPausedEvent extends PauseEvent {
-    event: MapFlowEventName.GAME_PAUSED
+    event: Get5EventName.GAME_PAUSED
 }
 
 /**
  * Fired when the match is unpaused.
  */
 export interface MatchUnpausedEvent extends PauseEvent {
-    event: MapFlowEventName.GAME_UNPAUSED
+    event: Get5EventName.GAME_UNPAUSED
 }
 
 /**
  * Fired when the knife round starts.
  */
 export interface KnifeRoundStartedEvent extends MapFlowEvent {
-    event: MapFlowEventName.KNIFE_START
+    event: Get5EventName.KNIFE_START
     matchid: string
     map_number: MapNumber
 }
@@ -42,7 +42,7 @@ export interface KnifeRoundStartedEvent extends MapFlowEvent {
  * ***side*** represents the chosen side of the winning team, not the side that won the knife round.
  */
 export interface KnifeRoundWonEvent extends MapFlowEvent {
-    event: MapFlowEventName.KNIFE_WON
+    event: Get5EventName.KNIFE_WON
     matchid: string
     map_number: MapNumber
     team: Team
@@ -54,7 +54,7 @@ export interface KnifeRoundWonEvent extends MapFlowEvent {
  * Fired when a team's ready status changes.
  */
 export interface TeamReadyStatusChangedEvent extends MapFlowEvent {
-    event: MapFlowEventName.TEAM_READY_STATUS_CHANGED
+    event: Get5EventName.TEAM_READY_STATUS_CHANGED
     matchid: string
     team: Team
     ready: boolean
@@ -64,8 +64,8 @@ export interface TeamReadyStatusChangedEvent extends MapFlowEvent {
 /**
  * Fired when a map is going live.
  */
-export interface GoingLiveEvnet extends MapFlowEvent {
-    event: MapFlowEventName.GOING_LIVE
+export interface GoingLiveEvent extends MapFlowEvent {
+    event: Get5EventName.GOING_LIVE
     matchid: string
     map_number: MapNumber
 }

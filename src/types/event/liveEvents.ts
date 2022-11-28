@@ -1,4 +1,4 @@
-import { Assist, BombSite, Get5Event, LiveEventName, MapNumber, Player, RoundNumber, RoundTime, Victim, Weapon, Winner } from ".";
+import { Assist, BombSite, Get5Event, Get5EventName, MapNumber, Player, RoundNumber, RoundTime, Victim, Weapon, Winner } from ".";
 
 /**
  * Events that only occur during live rounds (not during knife, veto or warmup).
@@ -9,7 +9,7 @@ import { Assist, BombSite, Get5Event, LiveEventName, MapNumber, Player, RoundNum
  * Fired when a round starts (when freezetime begins).
  */
 export interface RoundStartEvent extends LiveEvent {
-    event: LiveEventName.ROUND_START
+    event: Get5EventName.ROUND_START
     matchid: string
     map_number: MapNumber
     round_number: RoundNumber
@@ -20,7 +20,7 @@ export interface RoundStartEvent extends LiveEvent {
  * Game activity can occur after this.
  */
 export interface RoundEndEvent extends LiveEvent {
-    event: LiveEventName.ROUND_END
+    event: Get5EventName.ROUND_END
     matchid: string
     map_number: MapNumber
     round_number: RoundNumber
@@ -35,7 +35,7 @@ export interface RoundEndEvent extends LiveEvent {
  * Fired after the stats update on round end.
  */
 export interface RoundStatsUpdated extends LiveEvent {
-    event: LiveEventName.STATS_UPDATED
+    event: Get5EventName.STATS_UPDATED
     matchid: string
     map_number: MapNumber
     round_number: RoundNumber
@@ -45,7 +45,7 @@ export interface RoundStatsUpdated extends LiveEvent {
  * Fired when a player is elected the MVP of the round.
  */
 export interface PlayerBecameMVPEvnet extends LiveEvent {
-    event: LiveEventName.ROUND_MVP
+    event: Get5EventName.ROUND_MVP
     matchid: string
     map_number: MapNumber
     round_number: RoundNumber
@@ -57,7 +57,7 @@ export interface PlayerBecameMVPEvnet extends LiveEvent {
  * Fired whenever a grenade is thrown by a player. The weapon property reflects the grenade used.
  */
 export interface GrenadeThrown extends LiveEvent {
-    event: LiveEventName.GRENADE_THROWN
+    event: Get5EventName.GRENADE_THROWN
     matchid: string
     map_number: MapNumber
     round_number: RoundNumber
@@ -70,7 +70,7 @@ export interface GrenadeThrown extends LiveEvent {
  * Fired when a player dies.
  */
 export interface PlayerDeathEvent extends LiveEvent {
-    event: LiveEventName.PLAYER_DEATH,
+    event: Get5EventName.PLAYER_DEATH,
     matchid: string
     map_number: MapNumber
     round_number: RoundNumber
@@ -108,7 +108,7 @@ interface DamagingGrenadeDetonationEvent extends GrenadeDetonatedEvent {
  * were affected. weapon is always an HE grenade.
  */
 export interface HEGrenadeDetonatedEvent extends DamagingGrenadeDetonationEvent {
-    event: LiveEventName.HEGRENADE_DETONATED
+    event: Get5EventName.HEGRENADE_DETONATED
     victims: Victim[]
 }
 
@@ -118,7 +118,7 @@ export interface HEGrenadeDetonatedEvent extends DamagingGrenadeDetonationEvent 
  * time at which the grenade detonated (started burning).
  */
 export interface MolotovDetonated extends DamagingGrenadeDetonationEvent {
-    event: LiveEventName.MOLOTOV_DETONATED
+    event: Get5EventName.MOLOTOV_DETONATED
     victims: Victim[]
 }
 
@@ -127,7 +127,7 @@ export interface MolotovDetonated extends DamagingGrenadeDetonationEvent {
  * victims who were affected. weapon is always a flash bang grenade.
  */
 export interface FlashBangDetonated extends GrenadeDetonatedEvent {
-    event: LiveEventName.FLASHBANG_DETONATED
+    event: Get5EventName.FLASHBANG_DETONATED
     victims: Victim[]
 }
 
@@ -136,7 +136,7 @@ export interface FlashBangDetonated extends GrenadeDetonatedEvent {
  * always a smoke grenade.
  */
 export interface SmokeGrenadeDetonated extends GrenadeDetonatedEvent {
-    event: LiveEventName.SMOKEGRENADE_DETONATED
+    event: Get5EventName.SMOKEGRENADE_DETONATED
     extinguished_molotov: true
 }
 
@@ -145,7 +145,7 @@ export interface SmokeGrenadeDetonated extends GrenadeDetonatedEvent {
  * always a decoy grenade.
  */
 export interface DecoyStartedEvent extends GrenadeDetonatedEvent {
-    event: LiveEventName.DECOYGRENADE_STARTED
+    event: Get5EventName.DECOYGRENADE_STARTED
 }
 
 interface BombEvent extends LiveEvent {
@@ -160,7 +160,7 @@ interface BombEvent extends LiveEvent {
  * Fired when the bomb is planted. player describes who planted the bomb.
  */
 export interface BombPlantedEvent extends BombEvent {
-    event: LiveEventName.BOMB_PLANTED
+    event: Get5EventName.BOMB_PLANTED
     player: Player
 }
 
@@ -168,7 +168,7 @@ export interface BombPlantedEvent extends BombEvent {
  * Fired when the bomb is defused. player describes who defused the bomb.
  */
 export interface BombDefusedEvent extends BombEvent {
-    event: LiveEventName.BOMB_DEFUSED
+    event: Get5EventName.BOMB_DEFUSED
     player: Player
     bomb_time_remaining:  number
 }
@@ -176,6 +176,6 @@ export interface BombDefusedEvent extends BombEvent {
 /**
  * Fired when the bomb explodes.
  */
-export interface BombExplodedTime extends BombEvent {
-    event: LiveEventName.BOMB_EXPLODED
+export interface BombExplodedEvent extends BombEvent {
+    event: Get5EventName.BOMB_EXPLODED
 }

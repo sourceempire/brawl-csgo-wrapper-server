@@ -1,4 +1,4 @@
-import { ClientActionEventName, LiveEventName, MapFlowEventName, SeriesFlowEventName } from "./eventEnums";
+import { Get5EventName } from "./eventEnums";
 
 /**
  * The map number in the series, starting at 0.
@@ -60,7 +60,6 @@ export type BombSite = "a" | "b";
  * The format is determined by the get5_demo_name_format parameter.
  */
 export type DemoFilename = string;
-
 
 export enum GameState {
     NONE = "none", 
@@ -141,14 +140,13 @@ export interface DamageGrenadeVictim extends Victim {
     killed: boolean
 }
 
-
 export interface Get5Event {
-    event: SeriesFlowEventName | MapFlowEventName | LiveEventName | ClientActionEventName
+    event: Get5EventName
     matchid: string;
 }
 
-export * from "./eventEnums"
-export * from "./clientActionEvents";
-export * from "./liveEvents";
-export * from "./mapFlowEvents";
-export * from "./seriesFlowEvents";
+export * from "./eventEnums.js"
+export * from "./clientActionEvents.js";
+export * from "./liveEvents.js";
+export * from "./mapFlowEvents.js";
+export * from "./seriesFlowEvents.js";

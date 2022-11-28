@@ -1,4 +1,5 @@
-export enum SeriesFlowEventName {
+export enum Get5EventName {
+    // Series flow event names
     GAME_STATE_CHANGED = "game_state_changed",
     PRELOAD_MATCH_CONFIG = "preload_match_config",
     MATCH_CONFIG_LOAD_FAIL = "match_config_load_fail",
@@ -10,19 +11,17 @@ export enum SeriesFlowEventName {
     MAP_VETOED = "map_vetoed",
     BACKUP_RESTORE = "backup_loaded",
     DEMO_FINISHED = "demo_finished",
-    DEMO_UPLOAD_ENDED = "demo_upload_ended"
-}
+    DEMO_UPLOAD_ENDED = "demo_upload_ended",
 
-export enum MapFlowEventName {
+    // Map flow event names
     GAME_PAUSED = "game_paused",
     GAME_UNPAUSED = "game_unpaused",
     KNIFE_START = "knife_start",
     KNIFE_WON = "knife_won",
     TEAM_READY_STATUS_CHANGED = "team_ready_status_changed",
-    GOING_LIVE = "going_live"
-}
+    GOING_LIVE = "going_live",
 
-export enum LiveEventName {
+    // Live event names
     ROUND_START = "round_start",
     ROUND_END = "round_end",
     STATS_UPDATED = "stats_updated",
@@ -36,10 +35,9 @@ export enum LiveEventName {
     DECOYGRENADE_STARTED = "decoygrenade_started",
     BOMB_PLANTED = "bomb_planted",
     BOMB_DEFUSED = "bomb_defused",
-    BOMB_EXPLODED = "bomb_exploded"
-}
+    BOMB_EXPLODED = "bomb_exploded",
 
-export enum ClientActionEventName {
+    // Client action event names
     PLAYER_CONNECTED = "player_connect",
     PLAYER_DISCONNECTED = "player_disconnect",
     PLAYER_SAY = "player_say"
