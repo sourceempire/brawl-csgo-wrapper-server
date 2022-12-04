@@ -1,9 +1,5 @@
+import { SteamId } from "../common";
 import { Get5EventName } from "./eventEnums";
-
-/**
- * UUID
- */
-export type MatchId = string;
 
 /**
  * The map number in the series, starting at 0.
@@ -28,14 +24,6 @@ export type RoundTime = number;
  * uniquely identifies the player outside the server.
  */
 export type UserId = number;
-
-/**
- * The SteamID64 of the player. GetSteamId() and SetSteamId() in 
- * SourceMod. This will be BOT-%d if the player is a bot, where %d is 
- * the user ID (user_id). The string will be empty for Console and 
- * GOTV (although we should never see this in practice).
- */
-export type SteamId = string;
 
 /**
  * The in-game name of the player. If the player is a bot, this will 

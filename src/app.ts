@@ -31,7 +31,7 @@ app.post('/startmatch',  (req, res) => {
         try {
             const matchId = serverHandler.startNewMatch(matchData);
             if (matchId !== null) {
-                var link = serverHandler.getJoinLink(matchId);
+                var link = serverHandler.getServerAddress(matchId);
                 res.send('{"succeeded": true, "joinlink": "'+link+'"}');
             } else {
                 res.send('{"succeeded": false, "error": "No servers available", "errorcode": "noservers"}');

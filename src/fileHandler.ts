@@ -1,7 +1,8 @@
 import * as createMatchConfig from './matchConfig.js'
 import fs from 'fs';
 import jsonschema, { Schema } from 'jsonschema';
-import { Get5MatchTeam } from './types/config/index.js';
+import { Get5MatchTeam } from './types/config.js';
+import { SeriesResultRaw } from './types/matchResult.js';
 
 export const USER_DIR = '/home/steam/';
 
@@ -177,7 +178,7 @@ export function createMatchCfg(matchData: any, serverId: string, matchId: string
   
 }
 
-export function getResultFromJsonFile(filePath: string) {
+export function getResultFromJsonFile(filePath: string): Promise<SeriesResultRaw> {
   return new Promise((resolve, reject) => {
     if (!filePath.endsWith('.json')) {
       reject('file must be of type json');

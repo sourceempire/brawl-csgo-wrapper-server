@@ -1,5 +1,6 @@
-export type SteamID = string 
-export type Get5PlayerSet = { [key: SteamID]: string } | [SteamID] 
+import { SteamId } from "./common"
+
+export type Get5PlayerSet = { [key: SteamId]: string } | [SteamId] 
 
 export interface Get5MatchTeam {
     players: Get5PlayerSet 

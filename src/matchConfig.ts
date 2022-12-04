@@ -126,14 +126,14 @@ export function create1vs1Config(matchId: string, team1: Get5MatchTeam, team2: G
             mp_maxrounds: 2,
             get5_remote_log_url: logaddress,
             get5_stop_command_enabled: 0,
-            get5_hostname_format: 'Brawl Gaming: {TEAM1} vs {TEAM2}',
+            get5_hostname_format: '{TEAM1} vs {TEAM2}',
             get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',
             mp_halftime_duration: 15,
             get5_stats_path_format: 'matchstats_{MATCHID}.json',
+            sm_practicemode_can_be_started: 0,
 
             // BELOW NOT TESTED
             get5_demo_path: 'demos/{DATE}/',
-            sm_practicemode_can_be_started: 0,
         }
     }
 }

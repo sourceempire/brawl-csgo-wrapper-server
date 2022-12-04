@@ -12,7 +12,7 @@ interface Server {
     teams: any, // TODO -> fix type for this
     matchHistory: any[], // TODO -> fix type for this
     started: boolean,
-    joinLink: string
+    serverAddress: string
 }
 
 dotenv.config();
@@ -38,7 +38,7 @@ for (var i = 1; i <= 5; i++) {
     teams: null,
     matchHistory: [],
     started: false,
-    joinLink: buildSteamJoinLink(serverAddress, 27014+i)
+    serverAddress: `${serverAddress}:${27014+i}`,
   }
 }
 var isServerUpdating = false;
@@ -66,14 +66,10 @@ export function serverUpdating() {
     return isServerUpdating;
 }
 
-export function buildSteamJoinLink(serverAddress: string, port: number) {
-    return 'steam://connect/'+serverAddress+':'+port;
-}
-
-export function getJoinLink(matchId: string) {
+export function getServerAddress(matchId: string) {
     for (var serverId of Object.keys(servers)) {
         if (servers[serverId].currentMatchId == matchId) {
-            return servers[serverId].joinLink;
+            return servers[serverId].serverAddress;
         }
     }
 }
@@ -179,12 +175,12 @@ export function getPlayers(matchId: string, team: Team) {
 export function startMatch(matchId: string) {
     const serverId = getServerId(matchId)
     //TODO -> send a chat message that the match will start in x seconds.
-    //sm_csay Sends a centered message to all players.
+    // look at basechat.sp
+    // sm_csay Sends a centered message to all players.
+    const forceReadyCmd = spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_forceready'], spawnOptions);
 
-    const load = spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_forceready'], spawnOptions);
-
-    load.on("close", () => {
-        console.log('started match');
+    forceReadyCmd.on("close", () => {
+        console.log('set all players ready');
     })
 }
 
@@ -199,11 +195,15 @@ export function stopMatch(matchId: string) {
     }
 }
 
-//After match is finished match history is send, matchId is cleared and server is stopped.
-export function finishMatch(serverId: string, result: any) { // TODO -> Add interface for result
-    servers[serverId].matchHistory.push(result);
+export function finishMatch(serverId: string) { // TODO -> Add interface for result
     clearMatchId(serverId);
     stopCSGOServer(serverId);
+}
+
+// TODO -> Handle error?
+export function sendAlertMessage(matchId: string, message: string) {
+    const serverId = getServerId(matchId);
+    const csayCmd =  spawn('./csgo-server',  ['@'+ serverId, 'exec', 'sm_csay', message], spawnOptions);
 }
 
 //Sends command for starting the server.
