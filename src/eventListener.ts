@@ -116,8 +116,9 @@ function handlePlayerConnectedEvent(event: PlayerConnectedEvent) {
 }
 
 export function handleGoingLiveEvent(event: GoingLiveEvent) { // TODO -> refactor acording to new get5 update
-  serverHandler.setMatchStarted(event.matchid);
   clearWarmupTimer(event.matchid)
+  serverHandler.setMatchStarted(event.matchid);
+  
   
 
   // sendEvent('going_live', {
