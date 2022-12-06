@@ -19,6 +19,7 @@ import {
   MapResultEvent,
   PlayerConnectedEvent,
   PlayerDeathEvent,
+  PlayerSayEvent,
   RoundEndEvent,
   SeriesInitEvent,
   SeriesResultEvent,
@@ -55,6 +56,36 @@ function sendEvent(event: any, data: any) { // TODO -> create type for event and
   }
 }
 
+function startWarmupTimer(matchId: string, millisecondsToStart: number) {
+  let currentMillisecondsToStart = millisecondsToStart;
+
+  warmupTimers[matchId] = setInterval(() => {
+    currentMillisecondsToStart -= 1000;
+
+    const minutesLeft = Math.floor(currentMillisecondsToStart / 60000)
+    const secondsLeftInMinute = (currentMillisecondsToStart - minutesLeft * 60000) / 1000;
+    const timeLeftString = `0${minutesLeft}`.slice(-2) +':'+ `0${secondsLeftInMinute}`.slice(-2)
+
+    serverHandler.sendAlertMessage(matchId, `Starts in ${timeLeftString}, or when everyone is ready`)
+    
+    if (currentMillisecondsToStart <= 0) {
+      clearWarmupTimer(matchId)
+    }
+  }, 1000)
+}
+
+function clearWarmupTimer(matchId: string) {
+  if (warmupTimers[matchId]) {
+    clearTimeout(warmupTimers[matchId])
+    delete warmupTimers[matchId];
+  }
+}
+
+function isTeamConnected(matchId: MatchId, team: Team) {
+  const teamPlayers = serverHandler.getPlayers(matchId, team)
+  return teamPlayers.every((steamId: SteamId) => connectedPlayers[matchId].includes(steamId))
+}
+
 export function addSocket(connection: Connection) {
   sockets.push(connection);
   for (let event of unsentEvents) {
@@ -70,19 +101,12 @@ export function clearSocket(connection: Connection) {
   }  
 }
 
-export function handleSeriesStartEvent(event: SeriesInitEvent) { // TODO -> refactor acording to new get5 update
+function handleSeriesStartEvent(event: SeriesInitEvent) { // TODO -> refactor acording to new get5 update
   sendEvent(event.event, {
     matchid: event.matchid,
     event: event.event,
     serverAddress: getServerAddress(event.matchid),
   });
-}
-
-function clearWarmupTimer(matchId) {
-  if (warmupTimers[matchId]) {
-    clearTimeout(warmupTimers[matchId])
-    delete warmupTimers[matchId];
-  }
 }
 
 function handlePlayerConnectedEvent(event: PlayerConnectedEvent) {
@@ -99,23 +123,16 @@ function handlePlayerConnectedEvent(event: PlayerConnectedEvent) {
 
   if (isTeam1Connected && isTeam2Connected) {
     delete connectedPlayers[matchId];
-    const miliSecondsToStart = 300000 // 5 minutes
-    let currentMiliSecondsToStart = miliSecondsToStart;
-    
-    warmupTimers[matchId] = setInterval(() => {
-      currentMiliSecondsToStart -= 1000;
-      const minutesLeft = Math.floor(currentMiliSecondsToStart / 60000)
-      const secondsLeftInMinute = (currentMiliSecondsToStart - minutesLeft * 60000) / 1000;
-      const timeLeftString = `0${minutesLeft}`.slice(-2) +':'+ `0${secondsLeftInMinute}`.slice(-2)
-      serverHandler.sendAlertMessage(matchId, `Starts in ${timeLeftString}, or when everyone is ready`)
-      if (currentMiliSecondsToStart <= 0) {
-        clearWarmupTimer(matchId)
-      }
-    }, 1000)
+    startWarmupTimer(matchId, 300000)
   }
 }
 
-export function handleGoingLiveEvent(event: GoingLiveEvent) { // TODO -> refactor acording to new get5 update
+function handlePlayerSayEvent(event: PlayerSayEvent) {
+  console.log("PLAYER SAY")
+  console.log(event)
+}
+
+function handleGoingLiveEvent(event: GoingLiveEvent) { // TODO -> refactor acording to new get5 update
   clearWarmupTimer(event.matchid)
   serverHandler.setMatchStarted(event.matchid);
   
@@ -133,10 +150,7 @@ export function handleGoingLiveEvent(event: GoingLiveEvent) { // TODO -> refacto
   // });
 }
 
-function isTeamConnected(matchId: MatchId, team: Team) {
-  const teamPlayers = serverHandler.getPlayers(matchId, team)
-  return teamPlayers.every((steamId) => connectedPlayers[matchId].includes(steamId))
-}
+
 
 
 export function handlePlayerDeathEvent(event: PlayerDeathEvent) { // TODO -> refactor acording to new get5 update
@@ -328,40 +342,16 @@ const convertPlayerStats = (playerStatsRaw: PlayerStatsRaw): PlayerStats => {
   }
 }
 
-
-
-function setSeriesData(matchid: string, matchResult: any) { // TODO -> create interface for matchResult
-  const { winner, team1_name, team2_name } = matchResult
-  const team1Id = getTeamId(matchid, team1_name);
-  const team2Id = getTeamId(matchid, team2_name);
-
-  matchResult.seriesType = matchResult.series_type;
-  matchResult.seriesWinner = (winner === 'team1') ? team1Id : team2Id;
-  matchResult.seriesLoser = (winner === 'team1') ? team2Id : team1Id;
-
-  let team1SeriesScore = 0;
-  let team2SeriesScore = 0;
-
-  Object.keys(matchResult)
-    .filter((key) => key.includes('map'))
-    .forEach((mapKey) => {
-      if (matchResult[mapKey].winner === 'team1') team1SeriesScore++;
-      if (matchResult[mapKey].winner === 'team2') team2SeriesScore++;
-    })
-  
-  matchResult.seriesScore = {
-    [team1Id]: team1SeriesScore,
-    [team2Id]: team2SeriesScore,
-  }
-}
-
 export function handleGet5Event(get5Event: Get5Event) {
   switch (get5Event.event) {
     case Get5EventName.SERIES_START:
-      handleSeriesStartEvent(get5Event as SeriesInitEvent)
+      handleSeriesStartEvent(get5Event as SeriesInitEvent);
+      break;
+    case Get5EventName.PLAYER_SAY:
+      handlePlayerSayEvent(get5Event as PlayerSayEvent); 
       break;
     case Get5EventName.PLAYER_CONNECTED:
-      handlePlayerConnectedEvent(get5Event as PlayerConnectedEvent)
+      handlePlayerConnectedEvent(get5Event as PlayerConnectedEvent);
       break;
     case Get5EventName.GOING_LIVE:
       handleGoingLiveEvent(get5Event as GoingLiveEvent);
@@ -379,6 +369,7 @@ export function handleGet5Event(get5Event: Get5Event) {
       handleBombExplodedEvent(get5Event as BombExplodedEvent);
       break;
     case Get5EventName.ROUND_END:
+      console.log("ROUND END", get5Event)
       handleRoundEndEvent(get5Event as RoundEndEvent);
       break;
     case Get5EventName.MAP_RESULT:
@@ -388,7 +379,7 @@ export function handleGet5Event(get5Event: Get5Event) {
       handleSeriesEndEvent(get5Event as SeriesResultEvent);
       break;
     default: 
-      console.debug("Event not caught in handleGet5Event: ", get5Event)
+      console.debug("Event not caught in handleGet5Event:", get5Event)
   }
 }
 

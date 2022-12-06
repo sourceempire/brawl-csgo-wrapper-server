@@ -195,9 +195,9 @@ export function stopMatch(matchId: string) {
     }
 }
 
-export function finishMatch(serverId: string) { // TODO -> Add interface for result
-    clearMatchId(serverId);
+export function finishMatch(serverId: string) {
     stopCSGOServer(serverId);
+    clearMatchId(serverId);
 }
 
 // TODO -> Handle error?
@@ -260,13 +260,23 @@ export function endMatch(serverId: string) {
 
 //Sends commands for stopping server
 export function stopCSGOServer(serverId: string) {
-    try{
-        console.log('Stopping server');
-        spawn('./csgo-server', ['@' + serverId, 'stop'], spawnOptions);
-        servers[serverId].available = true;
-        servers[serverId].started = false;
-        servers[serverId].currentMatchId = null; 
-        servers[serverId].teams = null;   
+    try {
+        const matchId = getMatchId(serverId)
+        
+        if (!matchId) throw `No match id for server: ${serverId}`
+
+        const millisecondsToShutdown = 10000
+
+        sendAlertMessage(matchId, `Server shutting down in ${millisecondsToShutdown/1000} seconds`)
+        setTimeout(() => {
+            console.log('Stopping server');
+            spawn('./csgo-server', ['@' + serverId, 'stop'], spawnOptions);
+            servers[serverId].available = true;
+            servers[serverId].started = false;
+            servers[serverId].currentMatchId = null; 
+            servers[serverId].teams = null;
+        }, millisecondsToShutdown)
+        
     } catch(e){
         console.log('Failed to stop server!', e);
     }
