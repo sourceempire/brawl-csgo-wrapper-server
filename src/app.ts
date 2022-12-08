@@ -2,11 +2,11 @@ import dotenv from 'dotenv';
 import express from 'express';
 import bodyParser from 'body-parser';
 import sockjs from 'sockjs';
-import { validateRightFormatJSON } from './fileHandler.mjs';
-import * as serverHandler from './csgoServerHandler.mjs';
-import * as auth from './auth.mjs';
-import * as csgoLogger from './csgoLogger.mjs';
-import * as eventListener from './eventListener.mjs';
+import { validateRightFormatJSON } from './fileHandler.js';
+import * as serverHandler from './csgoServerHandler.js';
+import * as auth from './auth.js';
+import * as csgoLogger from './csgoLogger.js';
+import * as eventListener from './eventListener.js';
 
 dotenv.config()
 
@@ -31,7 +31,7 @@ app.post('/startmatch',  (req, res) => {
         try {
             const matchId = serverHandler.startNewMatch(matchData);
             if (matchId !== null) {
-                var link = serverHandler.getJoinLink(matchId);
+                var link = serverHandler.getServerAddress(matchId);
                 res.send('{"succeeded": true, "joinlink": "'+link+'"}');
             } else {
                 res.send('{"succeeded": false, "error": "No servers available", "errorcode": "noservers"}');

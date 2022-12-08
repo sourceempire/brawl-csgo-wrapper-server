@@ -1,3 +1,4 @@
+import { NextFunction, Request, Response } from 'express';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 
@@ -6,7 +7,7 @@ const privateKey = fs.readFileSync('jwt-rsa256.key');
 const publicKey = fs.readFileSync('jwt-rsa256.key.pub');
 
 
-function validAPIKey(req) {
+function validAPIKey(req: Request) {
   if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') { // Authorization: Bearer g1jipjgi1ifjioj
       // Handle token presented as a Bearer token in the Authorization header
       return req.headers.authorization.split(' ')[1] === APIKey;
@@ -15,7 +16,7 @@ function validAPIKey(req) {
     }
 }
 
-export function checkAuth(req, res, next) {
+export function checkAuth(req: Request, res: Response, next: NextFunction) {
   if (req.method === 'OPTIONS') return next();
 
   if (validAPIKey(req)) {
@@ -30,7 +31,7 @@ export function generateJWT() {
   return jwt.sign({}, privateKey, { algorithm: 'RS256', expiresIn: 5*60 });  
 }
 
-export function validateJWT(token) {
+export function validateJWT(token: string) {
   try {
     jwt.verify(token, publicKey, { algorithms: ['RS256'] });
     return true;
@@ -41,15 +42,16 @@ export function validateJWT(token) {
 }
 
 var allowedOrigins = ['http://localhost:8080', 'https://api.brawlgaming.com', 'https://brawl-gaming-server.herokuapp.com'];
-export function cors(req, res, next) {
+export function cors(req: Request, res: Response, next: NextFunction) {
   var origin = req.headers.origin;
-  if (allowedOrigins.indexOf(origin) != -1){
-    res.setHeader('Access-Control-Allow-Origin', origin);
+
+  if (allowedOrigins.indexOf(origin || "") != -1){
+    res.setHeader('Access-Control-Allow-Origin', origin || "");
   } else {
     res.setHeader('Access-Control-Allow-Origin', 'https://api.brawlgaming.com');
   }
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Access-Control-Allow-Origin, Origin, Content-Type, Accept, Authorization, Cache-Contro, X-XSRF-TOKEN');
-  res.header('Access-Control-Allow-Credentials', true); 
+  res.header('Access-Control-Allow-Credentials', "true"); 
   next();
 }

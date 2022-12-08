@@ -1,4 +1,7 @@
 jwt-key*
+jwt-rsa256*
+
+dist
 
 # Logs
 logs

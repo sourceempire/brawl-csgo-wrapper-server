@@ -1,22 +1,28 @@
-import { logaddress } from './constants.mjs';
+import { logaddress } from './constants.js';
+import { Get5Match, Get5MatchTeam } from './types/config';
 
+const matchStatsFileName = 'matchstats_{MATCHID}.json';
+
+export const getMatchStatsFileName = (matchId: string) => {
+    return matchStatsFileName.replace("{MATCHID}", matchId)
+}
 
 const gameModes = {
     competitive: {
-        'game_type': '0',
-        'game_mode': '1',
+        game_type: 0,
+        game_mode: 1,
     },
     wingman: {
-        'game_type': '0',
-        'game_mode': '2',
+        game_type: 0,
+        game_mode: 2,
     },
     deathmatch: {
-        'game_type': '1',
-        'game_mode': '2',
+        game_type: 1,
+        game_mode: 2,
     }
 }
 
-export function createWingmanConfig(matchId, team1, team2, team1Name, team2Name, map){
+export function createWingmanConfig(matchId, team1, team2, map){
     return {
         'matchid': matchId,
         'skip_veto': 1,
@@ -27,14 +33,8 @@ export function createWingmanConfig(matchId, team1, team2, team1Name, team2Name,
         {
             [map]: ''
         },
-        'team1': {
-            'name': team1Name,
-            'players': team1
-        },
-        'team2':{
-            'name': team2Name,
-            'players': team2
-        },
+        team1,
+        team2,
         'cvars': {
             ...gameModes.wingman,
             'mp_force_pick_time': 0,
@@ -63,7 +63,7 @@ export function createWingmanConfig(matchId, team1, team2, team1Name, team2Name,
     }
 }
 
-export function createCompetetiveConfig(matchId, team1, team2, team1Name, team2Name, map){
+export function createCompetetiveConfig(matchId, team1, team2, map){
     return {
         'matchid': matchId,
         'skip_veto': 1,
@@ -74,14 +74,8 @@ export function createCompetetiveConfig(matchId, team1, team2, team1Name, team2N
         {
             [map]: ''
         },
-        'team1': {
-            'name': team1Name,
-            'players': team1
-        },
-        'team2':{
-            'name': team2Name,
-            'players': team2
-        },
+        team1,
+        team2,
         'cvars': {
             'game_type': 0,
             'game_mode': 1, 
@@ -93,7 +87,7 @@ export function createCompetetiveConfig(matchId, team1, team2, team1Name, team2N
     };
 }
 
-export function createDeathmatchConfig(matchId, team1, team2, team1Name, team2Name, map){
+export function createDeathmatchConfig(matchId, team1, team2, map){
     return {
         'matchid': matchId,
         'skip_veto': 1,
@@ -103,14 +97,8 @@ export function createDeathmatchConfig(matchId, team1, team2, team1Name, team2Na
         {
             [map]: ''
         },
-        'team1': {
-            'name': team1Name,
-            'players': team1
-        },
-        'team2':{
-            'name': team2Name,
-            'players': team2
-        },
+        team1,
+        team2,
         'cvars': {
             ...gameModes.competitive,
             'mp_force_pick_time': 0,
@@ -126,45 +114,30 @@ export function createDeathmatchConfig(matchId, team1, team2, team1Name, team2Na
     };
 }
 
-export function create1vs1Config(matchId, team1, team2, team1Name, team2Name, map) {
-    console.log('HALLÅ')
-
+export function create1vs1Config(matchId: string, team1: Get5MatchTeam, team2: Get5MatchTeam, map: string): Get5Match {
     return {
-        'match_title': `${team1Name} vs ${team2Name}`,
-        'matchid': matchId,
-        'clinch_series': false,
-        'num_maps': 1,
-        'players_per_team': 1, // required to auto start when all players joined
-        'skip_veto': true,
-        'side_type': 'always_knife', // Last time playing, weapons weren't dropped on knife-round
-        'maplist': [map],
-        'team1': {
-            'name': team1Name,
-            'players': team1
-        },
-        'team2':{
-            'name': team2Name,
-            'players': team2
-        },
-        // not sure if numbers or strings should be provided
-        'cvars': {
-            ...gameModes.wingman,
-            'hostname': 'Brawl Gaming Server',
-            'mp_halftime': '1',
-            'mp_maxrounds': '2',
-            'get5_remote_log_url': logaddress,
-            'get5_stop_command_enabled': '0',
-            
-            
-            
+        match_title: "",
+        matchid: matchId,
+        num_maps: 1,
+        players_per_team: 1, // required to know when everyone is connected
+        skip_veto: true,
+        side_type: 'never_knife',
+        maplist: [map],
+        team1,
+        team2,
+        cvars: {
+            mp_halftime: 1,
+            mp_maxrounds: 2,
+            get5_remote_log_url: logaddress,
+            get5_stop_command_enabled: 0,
+            get5_hostname_format: '{TEAM1} vs {TEAM2}',
+            get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',
+            mp_halftime_duration: 15,
+            get5_stats_path_format: matchStatsFileName,
+            sm_practicemode_can_be_started: 0,
 
             // BELOW NOT TESTED
-            'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
-            'mp_warmup_pausetimer': '0',
-            'mp_warmuptime': '300',
-            'mp_warmuptime_all_players_connected': '30', // Warmup time to use when all players have connected. 0 to disable.
-            'sm_practicemode_can_be_started': '0',
-            'mp_endmatch_votenextmap': '0'
+            get5_demo_path: 'demos/{DATE}/',
         }
-    };
+    }
 }
