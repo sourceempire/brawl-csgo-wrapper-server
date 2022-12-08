@@ -54,48 +54,24 @@ export type TeamInfoRaw = {
   [playerId: SteamId]: PlayerStatsRaw,
 }
 
-export type SeriesResultRaw = {
+export type SeriesStatsRaw = {
   series_type: SeriesType
   team1_name: string
   team2_name: string
-  winner: Team
+  winner?: Team
+  [MapKey.First]?: MapStatsRaw
+  [MapKey.Second]?: MapStatsRaw
+  [MapKey.Third]?: MapStatsRaw
+  [MapKey.Fourth]?: MapStatsRaw
+  [MapKey.Fifth]?: MapStatsRaw
 } 
 
-export type MapResultRaw = {
-  winner: Team,
+export type MapStatsRaw = {
+  winner?: Team,
   mapname: string,
   [Team.TEAM1]: TeamInfoRaw
   [Team.TEAM2]: TeamInfoRaw
-}
-
-export type BestOf1SeriesResultRaw = SeriesResultRaw & {
-  [MapKey.First]: MapResultRaw
-}
-
-export type BestOf3SeriesResultRaw = SeriesResultRaw & {
-  [MapKey.First]: MapResultRaw
-  [MapKey.Second]: MapResultRaw
-  [MapKey.Third]: MapResultRaw
-}
-
-export type BestOf5SeriesResultRaw = SeriesResultRaw & {
-  [MapKey.First]: MapResultRaw
-  [MapKey.Second]: MapResultRaw
-  [MapKey.Third]: MapResultRaw
-  [MapKey.Fourth]: MapResultRaw
-  [MapKey.Fifth]: MapResultRaw
-}
-
-export const isBestOf1 = (seriesResult: SeriesResultRaw): seriesResult is BestOf1SeriesResultRaw => {
-  return seriesResult.series_type === SeriesType.BEST_OF_1
-}
-
-export const isBestOf3 = (seriesResult: SeriesResultRaw): seriesResult is BestOf3SeriesResultRaw => {
-  return seriesResult.series_type === SeriesType.BEST_OF_3
-}
-
-export const isBestOf5 = (seriesResult: SeriesResultRaw): seriesResult is BestOf5SeriesResultRaw => {
-  return seriesResult.series_type === SeriesType.BEST_OF_5
+  
 }
 
 export type PlayerStats = {
@@ -116,14 +92,14 @@ export type TeamInfo = {
   }
 }
 
-export type MapResult = {
-  winner: Team,
+export type MapStats = {
+  winner: TeamId | null, 
   mapName: string,
   teams: { [teamId: string]: TeamInfo }
 }
 
-export type SeriesResult = {
+export type SeriesStats = {
   matchId: MatchId,
-  winner: TeamId,
-  maps: MapResult[]
+  winner: TeamId | null,
+  maps: MapStats[]
 }

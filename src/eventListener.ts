@@ -1,43 +1,22 @@
 import { getServerAddress, getTeamId } from './csgoServerHandler.js';
 import { finishMatch } from './csgoServerHandler.js';
 import { getServerId } from './csgoServerHandler.js';
-import { moveJsonMatchFileToBackupLocation } from './fileHandler.js';
-import { getResultFromJsonFile } from './fileHandler.js';
-import { USER_DIR } from './fileHandler.js';
 import * as serverHandler from './csgoServerHandler.js';
-
 import {Connection} from "sockjs";
-
 import { MatchId, SteamId } from './types/common.js';
 import {
-  BombDefusedEvent,
-  BombExplodedEvent,
-  BombPlantedEvent,
   Get5Event,
   Get5EventName,
   GoingLiveEvent,
   MapResultEvent,
   PlayerConnectedEvent,
-  PlayerDeathEvent,
-  PlayerSayEvent,
   RoundEndEvent,
+  RoundStatsUpdatedEvent,
   SeriesInitEvent,
   SeriesResultEvent,
   Team
 } from './types/event/index.js';
-import { 
-  isBestOf1,
-  isBestOf3,
-  isBestOf5,
-  MapResult,
-  MapResultRaw,
-  PlayerStats,
-  PlayerStatsRaw,
-  SeriesResult,
-  SeriesResultRaw,
-  TeamInfo,
-  TeamInfoRaw 
-} from './types/matchResult.js';
+import { statConversion } from './conversions.js';
 
 const sockets: Connection[] = [];
 const unsentEvents: any[] = []; // TODO -> create type for unsentEvents
@@ -103,7 +82,7 @@ export function clearSocket(connection: Connection) {
 
 function handleSeriesStartEvent(event: SeriesInitEvent) { // TODO -> refactor acording to new get5 update
   sendEvent(event.event, {
-    matchid: event.matchid,
+    matchId: event.matchid,
     event: event.event,
     serverAddress: getServerAddress(event.matchid),
   });
@@ -127,219 +106,27 @@ function handlePlayerConnectedEvent(event: PlayerConnectedEvent) {
   }
 }
 
-function handlePlayerSayEvent(event: PlayerSayEvent) {
-  console.log("PLAYER SAY")
-  console.log(event)
-}
-
-function handleGoingLiveEvent(event: GoingLiveEvent) { // TODO -> refactor acording to new get5 update
+function handleGoingLiveEvent(event: GoingLiveEvent) {
   clearWarmupTimer(event.matchid)
   serverHandler.setMatchStarted(event.matchid);
-  
-  
-
-  // sendEvent('going_live', {
-  //   matchid: event.matchid,
-  //   event: event.event,
-  //   teamSides: {
-  //     T: getTeamId(event.matchid, event.params.team_sides.T),
-  //     CT: getTeamId(event.matchid, event.params.team_sides.CT)
-  //   },
-  //   mapNumber: event.params.map_number,
-  //   mapName: event.params.map_name,
-  // });
+  serverHandler.sendAlertMessage(event.matchid, "Match is starting soon")
 }
 
-
-
-
-export function handlePlayerDeathEvent(event: PlayerDeathEvent) { // TODO -> refactor acording to new get5 update
-  // const upperCaseParams = convertObjectKeysToUpperCase(event.params);
-
-  // sendEvent('player_death', {
-  //   ...upperCaseParams,
-  //   matchid: event.matchid,
-  //   event: event.event,
-  // });
+async function handleStatsUpdatedEvent(event: RoundStatsUpdatedEvent) {
+  const matchStats = await serverHandler.getMatchStats({matchId: event.matchid, dumpFile: true})
+  sendEvent(Get5EventName.STATS_UPDATED, matchStats)
 }
 
-export function handleBombPlantedEvent(event: BombPlantedEvent) { // TODO -> refactor acording to new get5 update
-  // const upperCaseParams = convertObjectKeysToUpperCase(event.params);
-
-  // sendEvent('bomb_planted', {
-  //   ...upperCaseParams,
-  //   matchid: event.matchid,
-  //   event: event.event,
-  // });
+function handleRoundEndEvent(event: RoundEndEvent) {
+  sendEvent(event.event, statConversion.roundEndEvent(event));
 }
 
-export function handleBombDefusedEvent(event: BombDefusedEvent) { // TODO -> refactor acording to new get5 update
-  // const upperCaseParams = convertObjectKeysToUpperCase(event.params);
-
-  // sendEvent('bomb_defused', {
-  //   ...upperCaseParams,
-  //   matchid: event.matchid,
-  //   event: event.event,
-  // })
-}
-
-export function handleBombExplodedEvent(event: BombExplodedEvent) { // TODO -> refactor acording to new get5 update
-  // const upperCaseParams = convertObjectKeysToUpperCase(event.params);
-
-  // sendEvent('bomb_exploded', {
-  //   ...upperCaseParams,
-  //   matchid: event.matchid,
-  //   event: event.event,
-  // })
-}
-
-export function handleRoundEndEvent(event: RoundEndEvent) { // TODO -> refactor acording to new get5 update
-  // const teams = Object.keys(event.params.teams)
-  //   .reduce((acc, paramKey) => {
-  //     const teamId = getTeamId(event.matchid, paramKey);
-  //     acc[teamId] = convertObjectKeysToUpperCase(event.params.teams[paramKey]);
-  //     return acc
-  //   }, {});
-
-  // const upperCaseParams = convertObjectKeysToUpperCase(event.params);
-  // delete upperCaseParams.teams;
-
-  // sendEvent('round_end', {
-  //   ...upperCaseParams,
-  //   teams,
-  //   matchid: event.matchid,
-  //   event: event.event,
-  // })
-}
-
-
-
-export function handleMapResultEvent(event: MapResultEvent) { // TODO -> refactor acording to new get5 update
-  // const teams = Object.keys(event.params.teams)
-  //   .reduce((acc, paramKey) => {
-  //     const teamId = getTeamId(event.matchid, paramKey);
-  //     acc[teamId] = convertObjectKeysToUpperCase(event.params.teams[paramKey]);
-  //     return acc
-  //   }, {});
-
-  // const upperCaseParams = convertObjectKeysToUpperCase(event.params);
-  // delete upperCaseParams.teams;
-
-  // sendEvent('map_end', {
-  //   ...upperCaseParams,
-  //   teams,
-  //   matchid: event.matchid,
-  //   event: event.event,
-  // })
-}
-
-export async function handleSeriesEndEvent(event: SeriesResultEvent) { // TODO -> refactor acording to new get5 update
+async function handleSeriesEndEvent(event: SeriesResultEvent) {
   const serverId = getServerId(event.matchid);
 
-  const matchResultPath = `${USER_DIR}csgo@${serverId}/csgo/matchstats_${event.matchid}.json`;
-  
-  try {
-    const seriesResultRaw = await getResultFromJsonFile(matchResultPath)
-    const seriesResult = convertSeriesResult(event.matchid, seriesResultRaw)
-    finishMatch(serverId);
-    sendEvent(event.event, seriesResult)
-  } catch (error) {
-    console.log(error);
-  }
- 
-  //   setSeriesData(event.matchid, matchResult);
-  //   setMapsData(event.matchid, matchResult);
-  //   removeUnnecessaryData(matchResult);
-  
-  //   const matchEvent = {
-  //     matchid: event.matchid,
-  //     result: matchResult,
-  //   }
-  
-  //   sendEvent('series_end', matchEvent)
-  
-  //   moveJsonMatchFileToBackupLocation(serverId, event.matchid)
-  //   finishMatch(serverId, matchResult)
-    
-  // } catch (error) {
-  //   console.log(error);
-  // }
-}
-
-const convertSeriesResult = (matchId: MatchId, seriesResultRaw: SeriesResultRaw): SeriesResult => {
-  let maps: MapResultRaw[] = []
-
-  if (isBestOf1(seriesResultRaw)) {
-    const {map0} = seriesResultRaw
-    maps.push(map0)
-  } else if (isBestOf3(seriesResultRaw)) {
-    const {map0, map1, map2} = seriesResultRaw
-    maps.push(map0, map1, map2)
-  } else if (isBestOf5(seriesResultRaw)) {
-    const {map0, map1, map2, map3, map4} = seriesResultRaw
-    maps.push(map0, map1, map2, map3, map4)
-  }
-
-  return {
-    matchId,
-    winner: seriesResultRaw.winner,
-    maps: maps.map((mapRaw) => convertMapResult(matchId, mapRaw))
-  }
-}
-
-const convertMapResult = (matchId: MatchId, mapResultRaw: MapResultRaw): MapResult => {
-  const team1Id = getTeamId(matchId, Team.TEAM1)
-  const team2Id = getTeamId(matchId, Team.TEAM2)
-
-  const {winner, mapname, team1, team2} = mapResultRaw
-
-  return {
-    winner,
-    mapName: mapname,
-    teams: {
-      [team1Id]: convertTeamInfo(team1),
-      [team2Id]: convertTeamInfo(team2)
-    }
-  }
-}
-
-const convertTeamInfo = (teamInfoRaw: TeamInfoRaw): TeamInfo => {
-  const {score} = teamInfoRaw;
-
-  const steamIds = Object.keys(teamInfoRaw).filter((key) => key !== "score");  
-
-  return {
-    score,
-    players: steamIds.reduce((acc, steamId) => {
-      const playerInfoRaw = teamInfoRaw[steamId];
-      acc[steamId] = convertPlayerStats(playerInfoRaw)
-      return acc;
-    }, {})
-  }
-}
-
-const convertPlayerStats = (playerStatsRaw: PlayerStatsRaw): PlayerStats => {
-  const {
-    assists,
-    bomb_defuses,
-    bomb_plants,
-    deaths,
-    headshot_kills,
-    kills,
-    mvp,
-    teamkills
-  } = playerStatsRaw;
-  
-  return {
-    assists: assists,
-    bombDefuses: bomb_defuses,
-    bombPlants: bomb_plants,
-    deaths: deaths,
-    headshotKills: headshot_kills,
-    kills: kills,
-    mvp: mvp,
-    teamKills: teamkills,
-  }
+  const matchStats = await serverHandler.getMatchStats({matchId: event.matchid});
+  finishMatch(serverId);
+  sendEvent(event.event, matchStats)
 }
 
 export function handleGet5Event(get5Event: Get5Event) {
@@ -347,39 +134,25 @@ export function handleGet5Event(get5Event: Get5Event) {
     case Get5EventName.SERIES_START:
       handleSeriesStartEvent(get5Event as SeriesInitEvent);
       break;
-    case Get5EventName.PLAYER_SAY:
-      handlePlayerSayEvent(get5Event as PlayerSayEvent); 
-      break;
     case Get5EventName.PLAYER_CONNECTED:
       handlePlayerConnectedEvent(get5Event as PlayerConnectedEvent);
       break;
     case Get5EventName.GOING_LIVE:
       handleGoingLiveEvent(get5Event as GoingLiveEvent);
       break;
-    case Get5EventName.PLAYER_DEATH:
-      handlePlayerDeathEvent(get5Event as PlayerDeathEvent);
-      break;
-    case Get5EventName.BOMB_PLANTED:
-      handleBombPlantedEvent(get5Event as BombPlantedEvent);
-      break;
-    case Get5EventName.BOMB_DEFUSED:
-      handleBombDefusedEvent(get5Event as BombDefusedEvent);
-      break;
-    case Get5EventName.BOMB_EXPLODED:
-      handleBombExplodedEvent(get5Event as BombExplodedEvent);
+    case Get5EventName.STATS_UPDATED:
+      handleStatsUpdatedEvent(get5Event as RoundStatsUpdatedEvent);
       break;
     case Get5EventName.ROUND_END:
-      console.log("ROUND END", get5Event)
       handleRoundEndEvent(get5Event as RoundEndEvent);
-      break;
-    case Get5EventName.MAP_RESULT:
-      handleMapResultEvent(get5Event as MapResultEvent);
       break;
     case Get5EventName.SERIES_END:
       handleSeriesEndEvent(get5Event as SeriesResultEvent);
       break;
     default: 
-      console.debug("Event not caught in handleGet5Event:", get5Event)
+      if (process.env.DEBUG) {
+        console.debug(`"${get5Event.event}" event not caught in handleGet5Event`)
+      }
   }
 }
 

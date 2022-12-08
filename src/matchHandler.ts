@@ -11,20 +11,4 @@ export function newMatch(matchId: string) {
   return matchId;
 }
 
-export function cancelMatch(matchId: string) {
-  if (currentMatches[matchId]) {
-    delete currentMatches[matchId]
-  }
-}
-
-export function getMatchResult(matchId: string) {
-  const match = currentMatches[matchId];
-  if (match === null || match === undefined) {
-    return null;
-  } else if (!match.finished) {
-    return {};
-  } else {
-    return match.result;
-  }
-}
 

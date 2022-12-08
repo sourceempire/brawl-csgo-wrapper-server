@@ -89,6 +89,21 @@ export enum SayCommand {
     SAY_TEAM = "say_team" 
 }
 
+export enum RoundEndReason {
+    BOMB_EXPLODED = "bombExploded",
+    BOMB_DEFUSED = "bombDefused",
+    TIMEOUT = "timeout",
+    ELIMINATION = "elimination"
+}
+
+export const roundEndResonMap = {
+    0: RoundEndReason.BOMB_EXPLODED,
+    6: RoundEndReason.BOMB_DEFUSED,
+    7: RoundEndReason.ELIMINATION, // CT win
+    8: RoundEndReason.ELIMINATION, // T win
+    11: RoundEndReason.TIMEOUT
+}
+
 export interface Winner {
     side: Side
     team: Team

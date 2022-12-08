@@ -25,7 +25,7 @@ export interface RoundEndEvent extends LiveEvent {
     map_number: MapNumber
     round_number: RoundNumber
     round_time: RoundTime
-    reason: unknown // TODO -> create enum from https://sourcemod.dev/#/cstrike/enumeration.CSRoundEndReason and check what is actually appearing here
+    reason: number // See RoundEndReason enum
     winner: Winner
     team1_score: number
     team2_score: number
@@ -34,7 +34,7 @@ export interface RoundEndEvent extends LiveEvent {
 /**
  * Fired after the stats update on round end.
  */
-export interface RoundStatsUpdated extends LiveEvent {
+export interface RoundStatsUpdatedEvent extends LiveEvent {
     event: Get5EventName.STATS_UPDATED
     matchid: string
     map_number: MapNumber

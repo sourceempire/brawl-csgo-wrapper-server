@@ -2,7 +2,7 @@ import * as createMatchConfig from './matchConfig.js'
 import fs from 'fs';
 import jsonschema, { Schema } from 'jsonschema';
 import { Get5MatchTeam } from './types/config.js';
-import { SeriesResultRaw } from './types/matchResult.js';
+import { SeriesStatsRaw } from './types/matchStats.js';
 
 export const USER_DIR = '/home/steam/';
 
@@ -16,10 +16,10 @@ export function validateRightFormatJSON(matchData: any) { // TODO -> fix interfa
 
     
     var matchCfgSchema: Schema = {
-        'required': ['matchid', 'team1', 'team2', 'map', 'mode'],
+        'required': ['matchId', 'team1', 'team2', 'map', 'mode'],
         'type': 'object',
         'properties': {
-          'matchid': {
+          'matchId': {
               'type': 'string',
           },
           'team1': {
@@ -135,8 +135,10 @@ export function validateRightFormatJSON(matchData: any) { // TODO -> fix interfa
       return false;
     }
 }
-//Create the match.cfg file with the right matchid and right players on right team and convert it to valve format
-export function createMatchCfg(matchData: any, serverId: string, matchId: string) { // TODO -> fix interface for matchData
+//Create the match.cfg file with the right matchId and right players on right team and convert it to valve format
+export function createMatchCfg(matchData: any, serverId: string) { // TODO -> fix interface for matchData
+  const matchId = matchData.matchId;
+  
   const { teamName: team1Name, players: team1Players } = matchData.team1
   const { teamName: team2Name, players: team2Players } = matchData.team2
 
@@ -175,51 +177,26 @@ export function createMatchCfg(matchData: any, serverId: string, matchId: string
       console.log('Error creating match.cfg', error);
     }
   })
-  
 }
 
-export function getResultFromJsonFile(filePath: string): Promise<SeriesResultRaw> {
+export function getResultFromJsonFile(filePath: string): Promise<SeriesStatsRaw> {
   return new Promise((resolve, reject) => {
     if (!filePath.endsWith('.json')) {
       reject('file must be of type json');
     }
-    fs.readFile(filePath, (err, data) => {
+    fs.readFile(filePath, (err, buffer) => {
       if (err) {
         reject(err);
         return;
       } 
-      
-      resolve(JSON.parse(data.toString())); // NOT TESTED, added toString()
-    });
-  })
-}
 
-export function moveJsonMatchFileToBackupLocation(serverId: string, matchId: string) {
-  const fileName = `get5_matchstats_${matchId}.json`;
-  const filePath = `${USER_DIR}csgo@${serverId}/csgo/${fileName}`;
-  
-  createJsonBackupLocationIfNonExistent();
-  const backupLocation = `${USER_DIR}backup_matchfiles/${fileName}`;
-
-  // Moves file
-  fs.rename(filePath, backupLocation, function (error) {
-    if (error) console.log(error);
-    // TODO -> check if below function works when working with json instead of cfg
-    // deleteUnecessaryMatchFiles(serverId);
-  })
-}
-
-function createJsonBackupLocationIfNonExistent() {
-  const _dirPath = USER_DIR+'backup_matchfiles';
-  if (!fs.existsSync(_dirPath)) {
-    // Folder absent
-    // Create folder
-    fs.mkdir(_dirPath, function (err) {
-      if (err) {
-        console.log(err);
+      try {
+        resolve(JSON.parse(buffer.toString()));
+      } catch (error) {
+        console.error(error)
       }
     });
-  }
+  })
 }
 
 

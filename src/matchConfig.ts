@@ -1,6 +1,11 @@
 import { logaddress } from './constants.js';
 import { Get5Match, Get5MatchTeam } from './types/config';
 
+const matchStatsFileName = 'matchstats_{MATCHID}.json';
+
+export const getMatchStatsFileName = (matchId: string) => {
+    return matchStatsFileName.replace("{MATCHID}", matchId)
+}
 
 const gameModes = {
     competitive: {
@@ -114,13 +119,12 @@ export function create1vs1Config(matchId: string, team1: Get5MatchTeam, team2: G
         match_title: "",
         matchid: matchId,
         num_maps: 1,
-        players_per_team: 1, // required to auto start when all players joined
+        players_per_team: 1, // required to know when everyone is connected
         skip_veto: true,
         side_type: 'never_knife',
         maplist: [map],
         team1,
         team2,
-        // not sure if numbers or strings should be provided
         cvars: {
             mp_halftime: 1,
             mp_maxrounds: 2,
@@ -129,7 +133,7 @@ export function create1vs1Config(matchId: string, team1: Get5MatchTeam, team2: G
             get5_hostname_format: '{TEAM1} vs {TEAM2}',
             get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',
             mp_halftime_duration: 15,
-            get5_stats_path_format: 'matchstats_{MATCHID}.json',
+            get5_stats_path_format: matchStatsFileName,
             sm_practicemode_can_be_started: 0,
 
             // BELOW NOT TESTED

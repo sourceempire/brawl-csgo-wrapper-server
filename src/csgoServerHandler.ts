@@ -1,10 +1,12 @@
 import { ChildProcess, spawn, SpawnOptions } from 'child_process';
 import dotenv from 'dotenv';
-
-import * as fileHandler from './fileHandler.js';
-import * as matchHandler from './matchHandler.js';
 import schedule from 'node-schedule';
+import * as fileHandler from './fileHandler.js';
 import { Team } from './types/event/index.js';
+import { getMatchStatsFileName } from './matchConfig.js';
+import { statConversion } from './conversions.js';
+import chokidar from 'chokidar';
+import { SeriesStats } from './types/matchStats.js';
 
 interface Server {
     available: boolean,
@@ -29,7 +31,7 @@ const spawnOptions: SpawnOptions = {
     windowsVerbatimArguments: true,
 };
 
-var servers: Record<string, Server> = {};
+const servers: Record<string, Server> = {};
 
 for (var i = 1; i <= 5; i++) { 
   servers['csgo'+ i] = {
@@ -41,7 +43,7 @@ for (var i = 1; i <= 5; i++) {
     serverAddress: `${serverAddress}:${27014+i}`,
   }
 }
-var isServerUpdating = false;
+let isServerUpdating = false;
 
 /**
 * This function will check for updates on csgo servers every day at 10:07:10 if
@@ -50,10 +52,10 @@ var isServerUpdating = false;
 schedule.scheduleJob('10 7 10 * * *', checkIfUpdateNeeded);
 
 export function checkIfUpdateNeeded(){
-    try{
+    try {
         isServerUpdating = true;
         console.log('Updating server');
-        var updateProcess = spawn('./csgo-server', ['update'], spawnOptions);
+        const updateProcess = spawn('./csgo-server', ['update'], spawnOptions);
         updateProcess.on('close', () => { // when update is done
             isServerUpdating = false;
         })
@@ -67,11 +69,8 @@ export function serverUpdating() {
 }
 
 export function getServerAddress(matchId: string) {
-    for (var serverId of Object.keys(servers)) {
-        if (servers[serverId].currentMatchId == matchId) {
-            return servers[serverId].serverAddress;
-        }
-    }
+    const serverId = getServerId(matchId);
+    return servers[serverId].serverAddress;
 }
 
 export function setMatchId(serverId: string, matchId: string) {
@@ -121,20 +120,20 @@ export function startNewMatch(matchData: any) { //TODO -> Add interface for matc
         console.log('No available servers')
         return null;
     }
-    const matchId = matchHandler.newMatch(matchData.matchid);
+   
+    const matchId = matchData.matchId;
     setTeams(serverId, matchData.team1, matchData.team2)
     console.log('Created match ' + matchId)
     try {
-        fileHandler.createMatchCfg(matchData, serverId, matchId);
+        fileHandler.createMatchCfg(matchData, serverId);
     } catch(error) {
-        matchHandler.cancelMatch(matchId);
         console.log(error);
         throw 'Could not start match';
     }
-    startCSGOServer(serverId);
-    setMatchId(serverId, matchId);
     
-
+    setMatchId(serverId, matchId);
+    startCSGOServer(serverId);
+   
     setTimeout(function() {
         if (servers[serverId].currentMatchId === matchId && 
                 !servers[serverId].started) {
@@ -281,3 +280,46 @@ export function stopCSGOServer(serverId: string) {
         console.log('Failed to stop server!', e);
     }
 }
+
+/**
+ * The dumpFile option only works if a match is running.
+ */
+export function getMatchStats({matchId, dumpFile = false}: {matchId: string, dumpFile?: boolean}) {
+    return new Promise<SeriesStats>((resolve, reject) => {
+        const serverId = getServerId(matchId);
+        const statsFileName = getMatchStatsFileName(matchId)
+        const matchStatsPath = `${fileHandler.USER_DIR}csgo@${serverId}/csgo/${statsFileName}`
+        
+        const getStats = async () => {
+            try {
+                const seriesStatsRaw = await fileHandler.getResultFromJsonFile(matchStatsPath)
+                const seriesStats = statConversion.seriesStats(matchId, seriesStatsRaw)
+                resolve(seriesStats)
+            } catch (error) {
+                reject(error)
+            }
+        }
+
+        if (dumpFile)  {
+            const watcher = chokidar.watch(matchStatsPath)
+            spawn('./csgo-server',  ['@'+ serverId, 'exec', 'get5_dumpstats', statsFileName], spawnOptions);
+
+            const abortTimeout = setTimeout(() => {
+                watcher.close();
+                console.log("Watching for file changes took too long, aborting");
+            }, 3000)
+
+            watcher.on("change", () => {
+                watcher.close();
+                clearTimeout(abortTimeout)
+                setTimeout(() => {
+                    getStats()
+                }, 1000)
+            })
+        } else {
+            getStats();
+        }
+    })
+}
+
+
