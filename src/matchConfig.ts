@@ -1,4 +1,5 @@
 import { logaddress } from './constants.js';
+import { createMatchCfg } from './fileHandler.js';
 import { Get5Match, Get5MatchTeam } from './types/config';
 
 const matchStatsFileName = 'matchstats_{MATCHID}.json';
@@ -22,122 +23,85 @@ const gameModes = {
     }
 }
 
-export function createWingmanConfig(matchId, team1, team2, map){
-    return {
-        'matchid': matchId,
-        'skip_veto': 1,
-        'num_maps':  1,
-        'side_type': 'never_knife',
-        'players_per_team': 2, // required to auto start when all players joined
-        'maplist':
-        {
-            [map]: ''
-        },
-        team1,
-        team2,
-        'cvars': {
-            ...gameModes.wingman,
-            'mp_force_pick_time': 0,
-            'mp_maxmoney': 8000,
-            'mp_maxrounds': 16,
-            'mp_halftime': 8,
-            'mp_do_warmup_period': 0,
-            'mp_freezetime': 10,
-            'mp_roundtime':	1.5,
-            'mp_halftime_duration': 15,
-            'mp_roundtime_hostage':	1.5,
-            'mp_roundtime_defuse':	1.5,
-            'cash_team_elemenation_bomb_map': 2750,
-            'cash_team_elimination_hostage_map_t': 2500,
-            'cash_team_elimination_hostage_map_ct': 2500,
-            'cash_team_loser_bonus': 2000,
-            'cash_team_loser_bonus_consecutive_rounds': 300,
-            'cash_team_terrorist_win_bomb': 3000,
-            'cash_team_win_by_defusing_bomb': 3000,
-            'cash_team_win_by_time_running_out_hostage': 2750,
-            'cash_team_win_by_time_running_out_bomb': 2750,
-            'mp_match_restart_delay': 300,
-            'hostname': 'Brawl Gaming Server',
-            'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
-        }
-    }
+const roundsConfig = {
+    competitive: {
+        mp_halftime: 15,
+        mp_maxrounds: 30,
+    },
+    wingman: {
+        mp_halftime: 8,
+        mp_maxrounds: 16,
+    },
+    one_vs_one: {
+        mp_halftime: 1,
+        mp_maxrounds: 2,
+    },
 }
 
-export function createCompetetiveConfig(matchId, team1, team2, map){
+const sharedMatchConfig: Omit<Get5Match, "matchid" | "maplist" | "team1" | "team2" | "num_maps" | "players_per_team">  = {
+    skip_veto: true,
+    side_type: 'never_knife',
+}
+
+const sharedCvars: Get5Match["cvars"] = {
+    mp_halftime_duration: 15,
+    get5_remote_log_url: logaddress,
+    get5_stop_command_enabled: 0,
+    get5_hostname_format: '{TEAM1} vs {TEAM2}',
+    get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',  
+    get5_stats_path_format: matchStatsFileName,
+    sm_practicemode_can_be_started: 0,
+    // get5_demo_path: 'demos/{DATE}/',
+}
+
+
+export function createCompetetiveConfig(matchId: string, team1: Get5MatchTeam, team2: Get5MatchTeam, map: string){
     return {
-        'matchid': matchId,
-        'skip_veto': 1,
-        'num_maps':  1,
-        'side_type': 'never_knife',
-        'players_per_team': 5, // required to auto start when all players joined
-        'maplist':
-        {
-            [map]: ''
-        },
+        ...sharedMatchConfig,
+        matchid: matchId,
+        num_maps: 1,
+        players_per_team: 2, // required to know when everyone is connected
+        maplist: [map],
         team1,
         team2,
-        'cvars': {
-            'game_type': 0,
-            'game_mode': 1, 
-            'mp_do_warmup_period': 0,
-            'hostname': 'Brawl Gaming Server',
-            'mp_halftime_duration': '15',
-            'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
+        cvars: {
+            ...gameModes.competitive,
+            ...sharedCvars,
+            ...roundsConfig.competitive
         }
     };
 }
 
-export function createDeathmatchConfig(matchId, team1, team2, map){
+export function createWingmanConfig(matchId: string, team1: Get5MatchTeam, team2: Get5MatchTeam, map: string){
     return {
-        'matchid': matchId,
-        'skip_veto': 1,
-        'num_maps':  1,
-        'side_type': 'never_knife',
-        'maplist':
-        {
-            [map]: ''
-        },
+        ...sharedMatchConfig,
+        matchid: matchId,
+        num_maps: 1,
+        players_per_team: 2, // required to know when everyone is connected
+        maplist: [map],
         team1,
         team2,
-        'cvars': {
-            ...gameModes.competitive,
-            'mp_force_pick_time': 0,
-            'mp_maxrounds': 2,
-            'sv_disable_show_team_select_menu': 1,
-            'mp_halftime': 1,
-            'mp_endmatch_votenextmap': 0,
-            'mp_endmatch_votenextleveltime': 20,
-            'mp_endmatch_votenextmap_keepcurrent': 0,
-            'hostname': 'Brawl Gaming Server',
-            'get5_stats_path_format': `get5_matchstats_${matchId}.json`,
+        cvars: {
+            ...gameModes.wingman,
+            ...sharedCvars,
+            ...roundsConfig.wingman,
         }
     };
 }
 
 export function create1vs1Config(matchId: string, team1: Get5MatchTeam, team2: Get5MatchTeam, map: string): Get5Match {
     return {
-        match_title: "",
+        ...sharedMatchConfig,
         matchid: matchId,
         num_maps: 1,
         players_per_team: 1, // required to know when everyone is connected
-        skip_veto: true,
-        side_type: 'never_knife',
         maplist: [map],
         team1,
         team2,
         cvars: {
-            mp_halftime: 1,
-            mp_maxrounds: 2,
-            get5_remote_log_url: logaddress,
-            get5_stop_command_enabled: 0,
-            get5_hostname_format: '{TEAM1} vs {TEAM2}',
-            get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',
-            mp_halftime_duration: 15,
-            get5_stats_path_format: matchStatsFileName,
-            sm_practicemode_can_be_started: 0,
-
-            // BELOW NOT TESTED
-            get5_demo_path: 'demos/{DATE}/',
+            ...gameModes.wingman,
+            ...sharedCvars,
+            ...roundsConfig.one_vs_one,
         }
     }
 }
