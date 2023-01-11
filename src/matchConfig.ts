@@ -1,5 +1,4 @@
 import { logaddress } from './constants.js';
-import { createMatchCfg } from './fileHandler.js';
 import { Get5Match, Get5MatchTeam } from './types/config';
 
 const matchStatsFileName = 'matchstats_{MATCHID}.json';
