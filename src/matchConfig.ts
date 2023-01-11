@@ -59,7 +59,7 @@ export function createCompetetiveConfig(matchId: string, team1: Get5MatchTeam, t
         ...sharedMatchConfig,
         matchid: matchId,
         num_maps: 1,
-        players_per_team: 2, // required to know when everyone is connected
+        players_per_team: 5, // required to know when everyone is connected
         maplist: [map],
         team1,
         team2,
