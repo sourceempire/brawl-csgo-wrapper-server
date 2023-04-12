@@ -159,9 +159,6 @@ export function createMatchCfg(matchData: any, serverId: string) { // TODO -> fi
   else if(matchData.mode === 'wingman') {
       obj = createMatchConfig.createWingmanConfig(matchId, team1, team2, matchData.map);
   }
-  else if(matchData.mode === 'deathmatch') {
-      obj = createMatchConfig.createDeathmatchConfig(matchId, team1, team2, matchData.map);
-  }
   else if(matchData.mode === 'one_vs_one') {
       obj = createMatchConfig.create1vs1Config(matchId, team1, team2, matchData.map);
   }
