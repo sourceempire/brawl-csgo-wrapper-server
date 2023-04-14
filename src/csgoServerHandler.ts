@@ -7,6 +7,7 @@ import { getMatchStatsFileName } from "./matchConfig.js";
 import { statConversion } from "./conversions.js";
 import chokidar from "chokidar";
 import { SeriesStats } from "./types/matchStats.js";
+import { getServersPath } from "./utils.js";
 
 interface Server {
   available: boolean;
@@ -20,12 +21,12 @@ interface Server {
 dotenv.config();
 
 
-const {CSGO_MULTI_SERVER_PATH, FAKE_SERVER_PATH, SERVER_ADDRESS, CSGO_SERVERS_PATH} = process.env
+const {CSGO_MULTI_SERVER_PATH, FAKE_MULTI_SERVER_PATH, SERVER_ADDRESS} = process.env
 const useFakeServers = process.argv.includes("fake")
 
 
 const spawnOptions: SpawnOptions = {
-  cwd: useFakeServers ? FAKE_SERVER_PATH : CSGO_MULTI_SERVER_PATH,
+  cwd: useFakeServers ? FAKE_MULTI_SERVER_PATH : CSGO_MULTI_SERVER_PATH,
   stdio: ["inherit"], // attatch tty (csgo-multiserver requirement)
   windowsVerbatimArguments: true,
 };
@@ -316,7 +317,7 @@ export function getMatchStats({
   return new Promise<SeriesStats>((resolve, reject) => {
     const serverId = getServerId(matchId);
     const statsFileName = getMatchStatsFileName(matchId);
-    const matchStatsPath = `${CSGO_SERVERS_PATH}csgo@${serverId}/csgo/${statsFileName}`;
+    const matchStatsPath = `${getServersPath()}csgo@${serverId}/csgo/${statsFileName}`;
 
     const getStats = async () => {
       try {
