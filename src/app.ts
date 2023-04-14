@@ -10,6 +10,22 @@ import * as eventListener from './eventListener.js';
 
 dotenv.config()
 
+const {CSGO_MULTI_SERVER_PATH, FAKE_SERVER_PATH, SERVER_ADDRESS, CSGO_SERVERS_PATH} = process.env
+const useFakeServers = process.argv.includes("fake")
+
+if (!SERVER_ADDRESS) {
+  throw Error("SERVER_ADDRESS was not provided in .env file");
+}
+if (!CSGO_SERVERS_PATH) {
+    throw Error()
+}
+if (useFakeServers && !FAKE_SERVER_PATH) {
+  throw Error("FAKE_SERVER_PATH was not provided in .env file");
+}
+if (!useFakeServers && !CSGO_MULTI_SERVER_PATH) {
+  throw Error("CSGO_MULTI_SERVER_PATH was not provided in .env file");
+}
+
 var app = express();
 app.disable('x-powered-by');
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -94,7 +110,7 @@ socket.on('connection', function(conn) {
 });
 
 const server = app.listen(40610, async () => {
-  console.log('Running cs go wrapper server on 40610');
+  console.log('Running cs go wrapper server on port 40610');
 });
 socket.installHandlers(server, { prefix: '/events' });
 

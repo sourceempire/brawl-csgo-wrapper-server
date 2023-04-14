@@ -4,11 +4,6 @@ import jsonschema, { Schema } from 'jsonschema';
 import { Get5MatchTeam } from './types/config.js';
 import { SeriesStatsRaw } from './types/matchStats.js';
 
-export const USER_DIR = '/home/steam/';
-
-
-
-
 //Validates so JSON text from Brawl server is right.
 //TESTED: Validation is tested in file CSGOTest on brawl server.
 export function validateRightFormatJSON(matchData: any) { // TODO -> fix interface for matchData
@@ -166,7 +161,7 @@ export function createMatchCfg(matchData: any, serverId: string) { // TODO -> fi
       throw 'Invalid game mode';
   }
 
-  const matchDir = `${USER_DIR}csgo@${serverId}/csgo`
+  const matchDir = `${process.env.CSGO_SERVERS_PATH}/csgo@${serverId}/csgo`
 
 
   fs.writeFile(`${matchDir}/match.json`, JSON.stringify(obj), (error) => {
