@@ -2,12 +2,15 @@ import dotenv from "dotenv";
 import express from "express";
 import bodyParser from "body-parser";
 import sockjs from "sockjs";
-import { validateRightFormatJSON } from "./fileHandler.js";
+import { validateMatchData } from "./fileHandler.js";
 import * as serverHandler from "./csgoServerHandler.js";
 import * as auth from "./auth.js";
 import * as csgoLogger from "./csgoLogger.js";
 import * as eventListener from "./eventListener.js";
 import { checkEnv } from "./utils.js";
+import teamHandler from "./teamHandler.js";
+import { exit } from "process";
+import { MatchData } from "./types/config.js";
 
 dotenv.config();
 checkEnv();
@@ -22,8 +25,9 @@ app.use(auth.checkAuth);
 
 serverHandler.checkIfUpdateNeeded();
 
-app.post("/startmatch", (req, res) => {
-  var matchData = req.body;
+app.post("/startmatch", async (req, res) => {
+  var matchData = req.body as MatchData;
+  
   if (serverHandler.serverUpdating()) {
     res.send(
       '{"succeeded": false, "error": "Server busy", "errorcode": "serverbusy"}'
@@ -31,7 +35,10 @@ app.post("/startmatch", (req, res) => {
     return;
   }
 
-  if (validateRightFormatJSON(matchData)) {
+  if (validateMatchData(matchData)) {
+    await teamHandler.addTeamToQueue(matchData.team1)
+    await teamHandler.addTeamToQueue(matchData.team2)
+    
     try {
       const matchId = serverHandler.startNewMatch(matchData);
       if (matchId !== null) {

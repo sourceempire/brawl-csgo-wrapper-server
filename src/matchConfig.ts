@@ -30,11 +30,7 @@ const roundsConfig = {
     wingman: {
         mp_halftime: 8,
         mp_maxrounds: 16,
-    },
-    one_vs_one: {
-        mp_halftime: 1,
-        mp_maxrounds: 2,
-    },
+    }
 }
 
 const sharedMatchConfig: Omit<Get5Match, "matchid" | "maplist" | "team1" | "team2" | "num_maps" | "players_per_team">  = {
@@ -54,12 +50,16 @@ const sharedCvars: Get5Match["cvars"] = {
 }
 
 
-export function createCompetetiveConfig(matchId: string, team1: Get5MatchTeam, team2: Get5MatchTeam, map: string){
+export function createCompetetiveConfig(matchId: string, team1: Get5MatchTeam, team2: Get5MatchTeam, map: string) {
+    if (team1.players.length !== team2.players.length) {
+        throw Error("The number of players on each team must be equal");
+    }
+
     return {
         ...sharedMatchConfig,
         matchid: matchId,
         num_maps: 1,
-        players_per_team: 5, // required to know when everyone is connected
+        players_per_team: getPlayersPerTeam(team1, team2), // required to know when everyone is connected
         maplist: [map],
         team1,
         team2,
@@ -76,7 +76,7 @@ export function createWingmanConfig(matchId: string, team1: Get5MatchTeam, team2
         ...sharedMatchConfig,
         matchid: matchId,
         num_maps: 1,
-        players_per_team: 2, // required to know when everyone is connected
+        players_per_team: getPlayersPerTeam(team1, team2), // required to know when everyone is connected
         maplist: [map],
         team1,
         team2,
@@ -88,19 +88,10 @@ export function createWingmanConfig(matchId: string, team1: Get5MatchTeam, team2
     };
 }
 
-export function create1vs1Config(matchId: string, team1: Get5MatchTeam, team2: Get5MatchTeam, map: string): Get5Match {
-    return {
-        ...sharedMatchConfig,
-        matchid: matchId,
-        num_maps: 1,
-        players_per_team: 1, // required to know when everyone is connected
-        maplist: [map],
-        team1,
-        team2,
-        cvars: {
-            ...gameModes.wingman,
-            ...sharedCvars,
-            ...roundsConfig.one_vs_one,
-        }
+function getPlayersPerTeam( team1: Get5MatchTeam, team2: Get5MatchTeam) {
+    if (team1.players.length !== team2.players.length) {
+        throw Error("The number of players on each team must be equal");
     }
+
+    return team1.players.length
 }

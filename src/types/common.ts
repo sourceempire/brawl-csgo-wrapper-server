@@ -1,3 +1,5 @@
+export type UUID = string;
+
 /**
  * The SteamID64 of the player. GetSteamId() and SetSteamId() in 
  * SourceMod. This will be BOT-%d if the player is a bot, where %d is 
@@ -21,3 +23,5 @@ export enum SeriesType {
     BEST_OF_3 = "bo3",
     BEST_OF_5 = "bo5"
 }
+
+export type UserTag = string;

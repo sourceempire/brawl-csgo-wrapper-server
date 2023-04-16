@@ -8,6 +8,7 @@ import { statConversion } from "./conversions.js";
 import chokidar from "chokidar";
 import { SeriesStats } from "./types/matchStats.js";
 import { getServersPath } from "./utils.js";
+import { MatchData } from "./types/config.js";
 
 interface Server {
   available: boolean;
@@ -117,8 +118,7 @@ export function getAvailableServer() {
 }
 
 // Creates match
-export function startNewMatch(matchData: any) {
-  //TODO -> Add interface for matchData
+export function startNewMatch(matchData: MatchData) {
   const serverId = getAvailableServer();
   if (serverId === null) {
     console.log("No available servers");
