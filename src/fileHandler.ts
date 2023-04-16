@@ -5,7 +5,7 @@ import { Get5MatchTeam, MatchData } from './types/config.js';
 import { SeriesStatsRaw } from './types/matchStats.js';
 import { getServersPath } from './utils.js';
 
-export function validateMatchData(matchData: MatchData) {
+export function isMatchDataValid(matchData: MatchData) {
   var v = new jsonschema.Validator();
 
   var matchCfgSchema: Schema = {

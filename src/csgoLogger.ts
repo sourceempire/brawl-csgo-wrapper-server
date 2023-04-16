@@ -11,6 +11,7 @@ export function setupCSGOLogging() {
   logger.use(express.json());
 
   logger.post('/csgolog', (req, res) => {
+    console.log("Get5Event ->", req.body)
     eventListener.handleGet5Event(req.body as Get5Event)
     res.send();
   });

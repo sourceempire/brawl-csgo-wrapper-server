@@ -5,7 +5,8 @@ export function checkEnv() {
     SERVER_ADDRESS,
     CSGO_SERVERS_PATH,
     FAKE_SERVERS_PATH,
-    CSGO_TEAMS_PATH
+    CSGO_TEAMS_PATH,
+    CSGO_CVARS_PATH,
   } = process.env;
   const useFakeServers = process.argv.includes("fake");
 
@@ -26,6 +27,9 @@ export function checkEnv() {
   }
   if (!CSGO_TEAMS_PATH) {
     throw Error("CSGO_TEAMS_PATH was not provided in .env file");
+  }
+  if (!useFakeServers && !CSGO_CVARS_PATH) {
+    throw Error("CSGO_CVARS_PATH was not provided in .env file")
   }
 }
 

@@ -1,4 +1,4 @@
-import { logaddress } from './constants.js';
+import { logAddress } from './constants.js';
 import { Get5Match, Get5MatchTeam } from './types/config';
 
 const matchStatsFileName = 'matchstats_{MATCHID}.json';
@@ -40,7 +40,7 @@ const sharedMatchConfig: Omit<Get5Match, "matchid" | "maplist" | "team1" | "team
 
 const sharedCvars: Get5Match["cvars"] = {
     mp_halftime_duration: 15,
-    get5_remote_log_url: logaddress,
+    get5_remote_log_url: logAddress,
     get5_stop_command_enabled: 0,
     get5_hostname_format: '{TEAM1} vs {TEAM2}',
     get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',  

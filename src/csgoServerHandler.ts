@@ -47,8 +47,8 @@ for (var i = 1; i <= 5; i++) {
 let isServerUpdating = false;
 
 /**
- * This function will check for updates on csgo servers every day at 10:07:10 ,if
- * there is one, it will update it.
+ * This function will check for updates on csgo servers every day at 10:07:10,
+ * if there is one, it will update it.
  */
 schedule.scheduleJob("10 7 10 * * *", checkIfUpdateNeeded);
 
@@ -218,7 +218,13 @@ export function sendAlertMessage(matchId: string, message: string) {
   );
 }
 
-//Sends command for starting the server.
+
+
+/**
+ * @deprecated The method should not be used
+ * 
+ * Sends command for starting the server.
+ */
 export function startCSGOServer(serverId: string) {
   let stop: ChildProcess;
   let start: ChildProcess;

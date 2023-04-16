@@ -2,15 +2,16 @@ import dotenv from "dotenv";
 import express from "express";
 import bodyParser from "body-parser";
 import sockjs from "sockjs";
-import { validateMatchData } from "./fileHandler.js";
+import { isMatchDataValid } from "./fileHandler.js";
 import * as serverHandler from "./csgoServerHandler.js";
 import * as auth from "./auth.js";
 import * as csgoLogger from "./csgoLogger.js";
 import * as eventListener from "./eventListener.js";
 import { checkEnv } from "./utils.js";
 import teamHandler from "./teamHandler.js";
-import { exit } from "process";
 import { MatchData } from "./types/config.js";
+import cvarsHandler from "./cvarsHandler.js";
+import * as serverHandlerNew from "./csgoServerHandlerNew.js";
 
 dotenv.config();
 checkEnv();
@@ -23,43 +24,57 @@ app.use(bodyParser.json());
 app.use(auth.cors);
 app.use(auth.checkAuth);
 
-serverHandler.checkIfUpdateNeeded();
-
 app.post("/startmatch", async (req, res) => {
   var matchData = req.body as MatchData;
-  
+
   if (serverHandler.serverUpdating()) {
     res.send(
-      '{"succeeded": false, "error": "Server busy", "errorcode": "serverbusy"}'
+      JSON.stringify({
+        succeeded: false,
+        errorcode: "serverbusy",
+        error: "Server busy",
+      })
     );
     return;
   }
 
-  if (validateMatchData(matchData)) {
-    await teamHandler.addTeamToQueue(matchData.team1)
-    await teamHandler.addTeamToQueue(matchData.team2)
-    
+  if (isMatchDataValid(matchData)) {
+    await teamHandler.addTeamToQueue(matchData.team1);
+    await teamHandler.addTeamToQueue(matchData.team2);
+    await cvarsHandler.addCvarsToQueue(matchData.matchId);
+
     try {
-      const matchId = serverHandler.startNewMatch(matchData);
-      if (matchId !== null) {
-        var link = serverHandler.getServerAddress(matchId);
-        res.send('{"succeeded": true, "joinlink": "' + link + '"}');
-      } else {
+      await serverHandlerNew.createCSGOMatch(matchData);
+      console.debug(`Server started with match id: ${matchData.matchId}`)
+    } catch (error) {
+      if ((error as Error).message === "no_servers_available") {
         res.send(
-          '{"succeeded": false, "error": "No servers available", "errorcode": "noservers"}'
+          JSON.stringify({
+            succeeded: false,
+            errorcode: "noservers",
+            error: "No servers available",
+          })
+        );
+      } else {
+        console.log(error);
+        res.status(500);
+        res.send(
+          JSON.stringify({
+            succeeded: false,
+            errorcode: "startmatchfailed",
+            error: "Error in starting match",
+          })
         );
       }
-    } catch (error) {
-      console.log(error);
-      res.status(500);
-      res.send(
-        '{"succeeded": false, "errorcode": "startmatchfailed", "error": "Error in starting match"}'
-      );
     }
   } else {
     res.status(400);
     res.send(
-      '{"succeeded": false, "errorcode": "invalidmatchdata", "error": "Invalid match data"}'
+      JSON.stringify({
+        succeeded: false,
+        errorcode: "invalidmatchdata",
+        error: "Invalid match data",
+      })
     );
   }
 });
@@ -68,7 +83,11 @@ app.post("/stopmatch", (req, res) => {
   var matchId = req.body.matchid;
   if (serverHandler.serverUpdating()) {
     res.send(
-      '{"succeeded": false, "error": "Server busy", "errorcode": "serverbusy"}'
+      JSON.stringify({
+        succeeded: false,
+        error: "Server busy",
+        errorcode: "serverbusy",
+      })
     );
     return;
   }
@@ -78,7 +97,11 @@ app.post("/stopmatch", (req, res) => {
   } else {
     res.status(400);
     res.send(
-      '{"succeeded": false, "errorcode": "invalidmatchid", "error": "Invalid match id"}'
+      JSON.stringify({
+        succeeded: false,
+        errorcode: "invalidmatchid",
+        error: "Invalid match id",
+      })
     );
   }
 });
@@ -90,6 +113,7 @@ app.get("/eventsrequest", (req, res) => {
 const socket = sockjs.createServer({
   sockjs_url: "http://cdn.jsdelivr.net/sockjs/1.0.1/sockjs.min.js",
 });
+
 socket.on("connection", function (conn) {
   let authorised = false;
   conn.on("data", function (message) {
