@@ -15,7 +15,7 @@ export function isMatchDataValid(matchData: MatchData) {
       team: {
         type: "object",
         properties: {
-          teamId: {
+          id: {
             type: "string",
             format: "uuid"
           },
@@ -23,21 +23,15 @@ export function isMatchDataValid(matchData: MatchData) {
             type: "string"
           },
           players: {
-            type: "array",
-            minItems: 1,
-            maxItems: 5,
-            uniqueItems: true,
-            items: {
-              type: "object",
-              patternProperties: {
-                "^[0-9]{17}$": {
-                  type: "string",
-                  minLength: 1,
-                  maxLength: 250
-                }
-              },
-              additionalProperties: false
-            }
+            type: "object",
+            patternProperties: {
+              "^[0-9]{17}$": {
+                type: "string",
+                minLength: 1,
+                maxLength: 250
+              }
+            },
+            additionalProperties: false,
           }
         }
       }

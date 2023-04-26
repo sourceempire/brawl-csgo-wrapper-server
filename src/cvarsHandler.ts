@@ -1,5 +1,5 @@
 import fs from 'fs/promises';
-import { logAddress } from './constants';
+import { logAddress } from './constants.js';
 import { MatchId } from './types/common';
 
 type CVars = Record<string, string | number>
@@ -55,6 +55,7 @@ async function processQueue(): Promise<void> {
 }
 
 async function addCvarsToQueue(matchId: MatchId, cvars?: CVars): Promise<void> {
+  console.log({matchId});
   return new Promise<void>((resolve) => {
     queue.push(async () => {
       await addCvars(matchId, {...defaultCvars, ...cvars, get5_server_id: matchId});

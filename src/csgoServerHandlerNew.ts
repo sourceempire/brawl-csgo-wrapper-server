@@ -1,6 +1,8 @@
 import { spawn, SpawnOptions } from "child_process";
 import schedule from "node-schedule";
 import { Get5MatchTeam, MatchData, Team } from "./types/config";
+import teamHandler from "./teamHandler.js";
+import cvarsHandler from "./cvarsHandler.js";
 
 type ServerId = string;
 
@@ -33,6 +35,7 @@ function checkIfUpdateNeeded() {
     updateProcess.on("close", () => {
       // when update is done
       isServerUpdating = false;
+      console.log("Update done")
     });
   } catch (e) {
     console.log("Failed to update!", e);
@@ -65,7 +68,30 @@ function setServerUnavailable(serverId: ServerId) {
   servers[serverId].isAvalable = false;
 }
 
-export function createCSGOMatch(matchData: MatchData) {
+export function getServerAddress(serverId: ServerId) {
+  return `${process.env.SERVER_ADDRESS}:${servers[serverId].port}`
+}
+
+function startCSGOServer(serverId: ServerId): Promise<void> {
+  return new Promise((resolve, reject) => {
+    try {
+      console.log(`Starting server ${serverId}`)
+      const start = spawn("./csgo-server", ["@" + serverId, "start"], spawnOptions);
+
+      start.on("close", () => {
+        resolve();
+      })
+
+      start.on("error", (error) => {
+        reject(error)
+      })
+    } catch (error) {
+      reject(error);
+    }
+  })
+}
+
+export async function createCSGOMatch(matchData: MatchData) {
   const serverId = getAvailableServer();
 
   if (serverId === null) {
@@ -74,19 +100,31 @@ export function createCSGOMatch(matchData: MatchData) {
 
   setServerUnavailable(serverId);
 
+  const serverAndMatchId = `${serverId}_${matchData.matchId}`
+
+  await teamHandler.addTeamToQueue(matchData.team1);
+  await teamHandler.addTeamToQueue(matchData.team2);
+  await cvarsHandler.addCvarsToQueue(serverAndMatchId);
+  
+  
+  await startCSGOServer(serverId);
+
   const numberOfMaps = ["-nm", "1"];
   const playersPerTeam = [
     "-ppt",
     `${getPlayersPerTeam(matchData.team1, matchData.team2)}`,
   ];
+
+
+  const skipVeto = ["-sv"]
   const coachesPerTeam = ["-cpt", "0"];
-  const matchId = ["-id", matchData.matchId];
+  const matchId = ["-id", serverAndMatchId];
   const sideType = ["-st", "never_knife"];
   const wingman = matchData.mode === "wingman" ? ["-w"] : [];
-  const team1 = ["-t1", matchData.team1.teamId];
-  const team2 = ["-t1", matchData.team2.teamId];
+  const team1 = ["-t1", matchData.team1.id];
+  const team2 = ["-t2", matchData.team2.id];
   const mapList = ["-ml", matchData.map];
-  const cvars = ["-cv", matchData.matchId];
+  const cvars = ["-cv", serverAndMatchId];
 
   try {
     const createMatchChildProcess = spawn(
@@ -95,7 +133,7 @@ export function createCSGOMatch(matchData: MatchData) {
           `@${serverId}`,
           "exec",
           "get5_creatematch",
-          "--skip_veto",
+          ...skipVeto,
           ...numberOfMaps,
           ...playersPerTeam,
           ...coachesPerTeam,
@@ -125,9 +163,9 @@ export function createCSGOMatch(matchData: MatchData) {
 }
 
 function getPlayersPerTeam(team1: Team, team2: Team) {
-  if (team1.players.length !== team2.players.length) {
+  if (Object.keys(team1.players).length !== Object.keys(team2.players).length) {
     throw Error("The number of players on each team must be equal");
   }
 
-  return team1.players.length;
+  return Object.keys(team1.players).length;
 }

@@ -1,8 +1,6 @@
 import fs from 'fs/promises';
 import { Team } from './types/config';
 
-type ConfigTeam = Omit<Team, 'teamId'>
-
 const teamsFilePath = process.env.CSGO_TEAMS_PATH as string;
 
 if (!teamsFilePath) throw Error("")
@@ -10,12 +8,12 @@ if (!teamsFilePath) throw Error("")
 const queue: (() => Promise<void>)[] = [];
 let isProcessing = false;
 
-async function readTeamsFile(): Promise<Record<string, Omit<ConfigTeam, "teamId">>> {
+async function readTeamsFile(): Promise<Record<string, Team>> {
   const data = await fs.readFile(teamsFilePath, 'utf8');
   return JSON.parse(data);
 }
 
-async function writeTeamsFile(teams: Record<string, ConfigTeam>): Promise<void> {
+async function writeTeamsFile(teams: Record<string, Team>): Promise<void> {
   const updatedJson = JSON.stringify(teams, null, 2);
   await fs.writeFile(teamsFilePath, updatedJson, 'utf8');
 }
@@ -23,12 +21,13 @@ async function writeTeamsFile(teams: Record<string, ConfigTeam>): Promise<void> 
 async function addTeam(team: Team): Promise<void> {
   const teams = await readTeamsFile();
 
-  const configTeam: ConfigTeam = {
+  const configTeam: Team = {
+    id: team.id,
     name: team.name,
     players: team.players,
   }
-  
-  teams[team.teamId] = configTeam;
+
+  teams[team.id] = configTeam;
   await writeTeamsFile(teams);
 }
 

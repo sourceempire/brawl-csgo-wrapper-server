@@ -1,4 +1,3 @@
-import { getServerAddress, getTeamId } from './csgoServerHandler.js';
 import { finishMatch } from './csgoServerHandler.js';
 import { getServerId } from './csgoServerHandler.js';
 import * as serverHandler from './csgoServerHandler.js';
@@ -17,6 +16,7 @@ import {
   Team
 } from './types/event/index.js';
 import { statConversion } from './conversions.js';
+import { getServerAddress } from './csgoServerHandlerNew.js';
 
 const sockets: Connection[] = [];
 const unsentEvents: any[] = []; // TODO -> create type for unsentEvents
@@ -81,10 +81,12 @@ export function clearSocket(connection: Connection) {
 }
 
 function handleSeriesStartEvent(event: SeriesInitEvent) { // TODO -> refactor acording to new get5 update
+  const [serverId, matchId] = event.matchid.split("_")
+  console.log({serverId, matchId, address: getServerAddress(serverId)})
   sendEvent(event.event, {
-    matchId: event.matchid,
+    matchId,
     event: event.event,
-    serverAddress: getServerAddress(event.matchid),
+    serverAddress: getServerAddress(serverId),
   });
 }
 

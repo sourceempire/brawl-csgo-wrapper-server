@@ -8,9 +8,7 @@ import * as auth from "./auth.js";
 import * as csgoLogger from "./csgoLogger.js";
 import * as eventListener from "./eventListener.js";
 import { checkEnv } from "./utils.js";
-import teamHandler from "./teamHandler.js";
 import { MatchData } from "./types/config.js";
-import cvarsHandler from "./cvarsHandler.js";
 import * as serverHandlerNew from "./csgoServerHandlerNew.js";
 
 dotenv.config();
@@ -39,12 +37,9 @@ app.post("/startmatch", async (req, res) => {
   }
 
   if (isMatchDataValid(matchData)) {
-    await teamHandler.addTeamToQueue(matchData.team1);
-    await teamHandler.addTeamToQueue(matchData.team2);
-    await cvarsHandler.addCvarsToQueue(matchData.matchId);
-
     try {
       await serverHandlerNew.createCSGOMatch(matchData);
+      res.send(JSON.stringify({succeeded: true}));
       console.debug(`Server started with match id: ${matchData.matchId}`)
     } catch (error) {
       if ((error as Error).message === "no_servers_available") {

@@ -3,7 +3,7 @@ import { SteamId, UserTag, UUID } from "./common"
 export type Get5PlayerSet = { [key: SteamId]: string } | [SteamId]
 
 export interface Team {
-    teamId: UUID,
+    id: UUID,
     name: string,
     players: { [id: SteamId]: UserTag }[]
 }
