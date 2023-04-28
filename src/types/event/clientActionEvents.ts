@@ -1,4 +1,4 @@
-import { Get5Event, Player, Get5EventName, MapNumber, RoundNumber, RoundTime, SayCommand } from ".";
+import { Get5Event, Player, Get5EventName, MapNumber, RoundNumber, RoundTime, SayCommand } from '.';
 
 /**
  * Events that occur based on players' chat or connection activity.

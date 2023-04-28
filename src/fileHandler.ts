@@ -6,27 +6,27 @@ import { SeriesStatsRaw } from './types/matchStats.js';
 import { getServersPath } from './utils.js';
 
 export function isMatchDataValid(matchData: MatchData) {
-  var v = new jsonschema.Validator();
+  const v = new jsonschema.Validator();
 
-  var matchCfgSchema: Schema = {
-    required: ["matchId", "team1", "team2", "map", "mode"],
-    type: "object",
+  const matchCfgSchema: Schema = {
+    required: ['matchId', 'team1', 'team2', 'map', 'mode'],
+    type: 'object',
     definitions: {
       team: {
-        type: "object",
+        type: 'object',
         properties: {
           id: {
-            type: "string",
-            format: "uuid"
+            type: 'string',
+            format: 'uuid'
           },
           name: {
-            type: "string"
+            type: 'string'
           },
           players: {
-            type: "object",
+            type: 'object',
             patternProperties: {
-              "^[0-9]{17}$": {
-                type: "string",
+              '^[0-9]{17}$': {
+                type: 'string',
                 minLength: 1,
                 maxLength: 250
               }
@@ -38,20 +38,20 @@ export function isMatchDataValid(matchData: MatchData) {
     },
     properties: {
       matchId: {
-        type: "string"
+        type: 'string'
       },
       team1: {
-        $ref: "#/definitions/team"
+        $ref: '#/definitions/team'
       },
       team2: {
-        $ref: "#/definitions/team"
+        $ref: '#/definitions/team'
       },
       map: {
-        type: "string"
+        type: 'string'
       },
       mode: {
-        type: "string",
-        enum: ["wingman", "competitive"]
+        type: 'string',
+        enum: ['wingman', 'competitive']
       }
     }
   };
@@ -83,7 +83,7 @@ export function createMatchCfg(matchData: any, serverId: string) { // TODO -> fi
     players: teamListToObj(team2Players)
   }
 
-  var obj;
+  let obj;
   if (matchData.mode === 'competitive') {
     obj = createMatchConfig.createCompetetiveConfig(matchId, team1, team2, matchData.map);
   }

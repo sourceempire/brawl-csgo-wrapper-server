@@ -1,4 +1,4 @@
-import { SteamId, UserTag, UUID } from "./common"
+import { SteamId, UserTag, UUID } from './common'
 
 export type Get5PlayerSet = { [key: SteamId]: string } | [SteamId]
 

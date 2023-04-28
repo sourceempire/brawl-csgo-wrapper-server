@@ -1,54 +1,54 @@
 import { finishMatch } from './csgoServerHandler.js';
-import { getServerId } from './csgoServerHandler.js';
-import * as serverHandler from './csgoServerHandler.js';
-import {Connection} from "sockjs";
-import { MatchId, SteamId } from './types/common.js';
-import {
-  Get5Event,
-  Get5EventName,
-  GoingLiveEvent,
-  MapResultEvent,
-  PlayerConnectedEvent,
-  RoundEndEvent,
-  RoundStatsUpdatedEvent,
-  SeriesInitEvent,
-  SeriesResultEvent,
-  Team
-} from './types/event/index.js';
-import { statConversion } from './conversions.js';
-import { getServerAddress } from './csgoServerHandlerNew.js';
+import { Connection } from 'sockjs';
+import { MatchId } from './types/common.js';
+import { getServerAddress, sendAlertMessage } from './csgoServerHandlerNew.js';
+import { Get5_Event, Get5_OnGoingLive, Get5_OnMapResult, Get5_OnPlayerConnected, Get5_OnRoundEnd, Get5_OnRoundStart, Get5_OnSeriesInit, Get5_OnSeriesResult } from './types/event/get5Events.js';
+import { isMatchReadyToStart, removeTracker } from './handlers/connectedPlayerCountHandler.js';
 
-const sockets: Connection[] = [];
-const unsentEvents: any[] = []; // TODO -> create type for unsentEvents
-const connectedPlayers: Record<MatchId, SteamId[]> = {}
+const socketConnections: Connection[] = [];
+const unsentEvents: any[] = [];
 const warmupTimers: Record<MatchId, NodeJS.Timer> = {}
 
-function sendEvent(event: any, data: any) { // TODO -> create type for event and data
-  let toSend = {...data, event: event};
-  if (sockets.length !== 0) {
-    for (let socket of sockets) {
+function sendEvent(event: any, data: any) {
+  const toSend = { ...data, event: event };
+  if (socketConnections.length !== 0) {
+    for (const socket of socketConnections) {
       socket.write(JSON.stringify(toSend));
     }
-    
   } else {
     unsentEvents.push(toSend);
   }
 }
 
-function startWarmupTimer(matchId: string, millisecondsToStart: number) {
+export function addSocket(connection: Connection) {
+  socketConnections.push(connection);
+  for (const event of unsentEvents) {
+    sendEvent(event.event, event);
+  }
+}
+
+export function clearSocket(connection: Connection) {
+  for (let i = socketConnections.length - 1; i >= 0; i--) {
+    if (socketConnections[i] === connection) {
+      socketConnections.splice(i, 1);
+    }
+  }
+}
+
+function startWarmupTimer(serverId: string, millisecondsToStart: number) {
   let currentMillisecondsToStart = millisecondsToStart;
 
-  warmupTimers[matchId] = setInterval(() => {
+  warmupTimers[serverId] = setInterval(() => {
     currentMillisecondsToStart -= 1000;
 
     const minutesLeft = Math.floor(currentMillisecondsToStart / 60000)
     const secondsLeftInMinute = (currentMillisecondsToStart - minutesLeft * 60000) / 1000;
-    const timeLeftString = `0${minutesLeft}`.slice(-2) +':'+ `0${secondsLeftInMinute}`.slice(-2)
+    const timeLeftString = `0${minutesLeft}`.slice(-2) + ':' + `0${secondsLeftInMinute}`.slice(-2)
 
-    serverHandler.sendAlertMessage(matchId, `Starts in ${timeLeftString}, or when everyone is ready`)
-    
+    sendAlertMessage(serverId, `Starts in ${timeLeftString}, or when everyone is ready`)
+
     if (currentMillisecondsToStart <= 0) {
-      clearWarmupTimer(matchId)
+      clearWarmupTimer(serverId)
     }
   }, 1000)
 }
@@ -57,32 +57,14 @@ function clearWarmupTimer(matchId: string) {
   if (warmupTimers[matchId]) {
     clearTimeout(warmupTimers[matchId])
     delete warmupTimers[matchId];
+    const a = 'asd'
   }
 }
 
-function isTeamConnected(matchId: MatchId, team: Team) {
-  const teamPlayers = serverHandler.getPlayers(matchId, team)
-  return teamPlayers.every((steamId: SteamId) => connectedPlayers[matchId].includes(steamId))
-}
 
-export function addSocket(connection: Connection) {
-  sockets.push(connection);
-  for (let event of unsentEvents) {
-    sendEvent(event.event, event);
-  }
-}
+function handleSeriesStart(event: Get5_OnSeriesInit) {
+  const { serverId, matchId } = parseServerAndMatchId(event.matchid)
 
-export function clearSocket(connection: Connection) {
-  for (var i = sockets.length-1; i >= 0; i--) {
-    if (sockets[i] === connection) {
-       sockets.splice(i, 1);
-    }
-  }  
-}
-
-function handleSeriesStartEvent(event: SeriesInitEvent) { // TODO -> refactor acording to new get5 update
-  const [serverId, matchId] = event.matchid.split("_")
-  console.log({serverId, matchId, address: getServerAddress(serverId)})
   sendEvent(event.event, {
     matchId,
     event: event.event,
@@ -90,75 +72,83 @@ function handleSeriesStartEvent(event: SeriesInitEvent) { // TODO -> refactor ac
   });
 }
 
-function handlePlayerConnectedEvent(event: PlayerConnectedEvent) {
-  const matchId = event.matchid
 
-  if (!connectedPlayers[matchId]) {
-    connectedPlayers[matchId] = []
-  }
-
-  connectedPlayers[matchId].push(event.player.steamid)
-
-  const isTeam1Connected = isTeamConnected(matchId, Team.TEAM1)
-  const isTeam2Connected = isTeamConnected(matchId, Team.TEAM2)
-
-  if (isTeam1Connected && isTeam2Connected) {
-    delete connectedPlayers[matchId];
-    startWarmupTimer(matchId, 300000)
+function handlePlayerConnected(event: Get5_OnPlayerConnected) {
+  if (isMatchReadyToStart(event.matchid, event)) {
+    startWarmupTimer(event.matchid, 300000)
+    removeTracker(event.matchid)
   }
 }
 
-function handleGoingLiveEvent(event: GoingLiveEvent) {
-  clearWarmupTimer(event.matchid)
-  serverHandler.setMatchStarted(event.matchid);
-  serverHandler.sendAlertMessage(event.matchid, "Match is starting soon")
+function handleGoingLiveEvent(event: Get5_OnGoingLive) {
+  const { serverId } = parseServerAndMatchId(event.matchid);
+
+  clearWarmupTimer(serverId)
+  sendAlertMessage(serverId, 'Match is starting soon')
 }
 
-async function handleStatsUpdatedEvent(event: RoundStatsUpdatedEvent) {
-  const matchStats = await serverHandler.getMatchStats({matchId: event.matchid, dumpFile: true})
-  sendEvent(Get5EventName.STATS_UPDATED, matchStats)
+// async function handleStatsUpdatedEvent(event: RoundStatsUpdatedEvent) {
+//   // const { matchId } = parseServerAndMatchId(event.matchid)
+//   // const matchStats = await serverHandler.getMatchStats({matchId, dumpFile: true})
+//   // sendEvent(Get5EventName.STATS_UPDATED, matchStats)
+// }
+
+
+function handleRoundStart(event: Get5_OnRoundStart) {
+  console.log('')
 }
 
-function handleRoundEndEvent(event: RoundEndEvent) {
-  sendEvent(event.event, statConversion.roundEndEvent(event));
+function handleRoundEndEvent(event: Get5_OnRoundEnd) {
+  // const { matchId } = parseServerAndMatchId(event.matchid)
+
+  // sendEvent(event.event, statConversion.roundEndEvent(event));
 }
 
-async function handleSeriesEndEvent(event: SeriesResultEvent) {
-  const serverId = getServerId(event.matchid);
-
-  const matchStats = await serverHandler.getMatchStats({matchId: event.matchid});
-  finishMatch(serverId);
-  sendEvent(event.event, matchStats)
+function handleMapResult(event: Get5_OnMapResult) {
+  console.log('')
 }
 
-export function handleGet5Event(get5Event: Get5Event) {
+async function handleSeriesEndEvent(event: Get5_OnSeriesResult) {
+  // const { serverId } = parseServerAndMatchId(event.matchid)
+
+  // const matchStats = await serverHandler.getMatchStats({ matchId: event.matchid });
+  // finishMatch(serverId);
+  // sendEvent(event.event, matchStats)
+}
+
+export function handleGet5Event(get5Event: Get5_Event) {
   switch (get5Event.event) {
-    case Get5EventName.SERIES_START:
-      handleSeriesStartEvent(get5Event as SeriesInitEvent);
+    case 'series_start':
+      handleSeriesStart(get5Event);
       break;
-    case Get5EventName.PLAYER_CONNECTED:
-      handlePlayerConnectedEvent(get5Event as PlayerConnectedEvent);
+    case 'player_connect':
+      handlePlayerConnected(get5Event);
       break;
-    case Get5EventName.GOING_LIVE:
-      handleGoingLiveEvent(get5Event as GoingLiveEvent);
+    case 'going_live':
+      handleGoingLiveEvent(get5Event);
       break;
-    case Get5EventName.STATS_UPDATED:
-      handleStatsUpdatedEvent(get5Event as RoundStatsUpdatedEvent);
+    case 'round_start':
+      handleRoundStart(get5Event);
       break;
-    case Get5EventName.ROUND_END:
-      handleRoundEndEvent(get5Event as RoundEndEvent);
+    case 'round_end':
+      handleRoundEndEvent(get5Event);
       break;
-    case Get5EventName.SERIES_END:
-      handleSeriesEndEvent(get5Event as SeriesResultEvent);
+    case 'map_result':
+      handleMapResult(get5Event);
       break;
-    default: 
+    case 'series_end':
+      handleSeriesEndEvent(get5Event);
+      break;
+    default:
       if (process.env.DEBUG) {
-        console.debug(`"${get5Event.event}" event not caught in handleGet5Event`)
+        console.debug(`"Event not caught in handleGet5Event:`)
+        console.debug(JSON.stringify(get5Event, null, 2))
       }
   }
 }
 
-// NOT USED ANYMORE, should probably be though
-export function sendMatchError(error: any) { // TODO -> create interface for error, whatever it is
-  sendEvent('match-error', { error });
+
+function parseServerAndMatchId(eventMatchId: string): { serverId: string, matchId: string } {
+  const [serverId, matchId] = eventMatchId.split('_')
+  return { serverId, matchId }
 }

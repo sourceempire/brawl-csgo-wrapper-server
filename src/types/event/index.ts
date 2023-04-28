@@ -1,5 +1,5 @@
-import { SteamId } from "../common";
-import { Get5EventName } from "./eventEnums";
+import { SteamId } from '../common';
+import { Get5EventName } from './eventEnums';
 
 /**
  * The map number in the series, starting at 0.
@@ -46,7 +46,7 @@ export type WeaponId = number;
 /**
  * 	The site at which the bomb was planted/defused or exploded.
  */
-export type BombSite = "a" | "b";
+export type BombSite = 'a' | 'b';
 
 /**
  * The name of the file containing the GOTV recording of the map. 
@@ -55,45 +55,45 @@ export type BombSite = "a" | "b";
 export type DemoFilename = string;
 
 export enum GameState {
-    NONE = "none", 
-    PRE_VETO = "pre_veto", 
-    VETO = "veto", 
-    WARMUP= "warmup", 
-    KNIFE= "knife", 
-    WAITING_FOR_KNIFE_DECISION = "waiting_for_knife_decision", 
-    GOING_LIVE= "going_live",
-    LIVE= "live", 
-    POST_GAME= "post_game",
+    NONE = 'none', 
+    PRE_VETO = 'pre_veto', 
+    VETO = 'veto', 
+    WARMUP= 'warmup', 
+    KNIFE= 'knife', 
+    WAITING_FOR_KNIFE_DECISION = 'waiting_for_knife_decision', 
+    GOING_LIVE= 'going_live',
+    LIVE= 'live', 
+    POST_GAME= 'post_game',
 }
 
 export enum Side {
-    CT = "ct",
-    T = "t",
-    SPEC = "spec",
+    CT = 'ct',
+    T = 't',
+    SPEC = 'spec',
 }
 
 export enum Team {
-    TEAM1 = "team1",
-    TEAM2 = "team2"
+    TEAM1 = 'team1',
+    TEAM2 = 'team2'
 }
 
 export enum PauseType {
-    TACTIVAL = "tactical", 
-    TECHNICAL = "technical", 
-    ADMIN = "admin", 
-    BACKUP = "backup"
+    TACTIVAL = 'tactical', 
+    TECHNICAL = 'technical', 
+    ADMIN = 'admin', 
+    BACKUP = 'backup'
 }
 
 export enum SayCommand {
-    SAY = "say", 
-    SAY_TEAM = "say_team" 
+    SAY = 'say', 
+    SAY_TEAM = 'say_team' 
 }
 
 export enum RoundEndReason {
-    BOMB_EXPLODED = "bombExploded",
-    BOMB_DEFUSED = "bombDefused",
-    TIMEOUT = "timeout",
-    ELIMINATION = "elimination"
+    BOMB_EXPLODED = 'bombExploded',
+    BOMB_DEFUSED = 'bombDefused',
+    TIMEOUT = 'timeout',
+    ELIMINATION = 'elimination'
 }
 
 export const roundEndResonMap = {
@@ -150,8 +150,8 @@ export interface Get5Event {
     matchid: string;
 }
 
-export * from "./eventEnums.js"
-export * from "./clientActionEvents.js";
-export * from "./liveEvents.js";
-export * from "./mapFlowEvents.js";
-export * from "./seriesFlowEvents.js";
+export * from './eventEnums.js'
+export * from './clientActionEvents.js';
+export * from './liveEvents.js';
+export * from './mapFlowEvents.js';
+export * from './seriesFlowEvents.js';

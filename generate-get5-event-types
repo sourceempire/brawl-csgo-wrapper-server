@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Run the script
+npx openapi-typescript-codegen --input https://splewis.github.io/get5/latest/event_schema.yml --output ./src/types/event/__generated
+
+# Remove unused folders
+rm -rf ./src/types/event/__generated/services
+rm -rf ./src/types/event/__generated/core
+
+# Remove the specified lines from the __generated/index.ts file
+sed -i '/ApiError/d' ./src/types/event/__generated/index.ts
+sed -i '/CancelablePromise, CancelError/d' ./src/types/event/__generated/index.ts
+sed -i '/OpenAPI }/d' ./src/types/event/__generated/index.ts
+sed -i '/OpenAPIConfig/d' ./src/types/event/__generated/index.ts
+
+# Create a temporary file to store the modified content
+temp_file=$(mktemp)
+
+# Adds .js extension to all exports and imports in the generated files, to make it work with ts-node
+find ./src/types/event/__generated -type f -name "*.ts" -exec perl -i -pe 's/((?:import|export).*from\s*)(['"'"'"])(.*)(?!\.js)(['"'"'"])/\1\2\3.js\4/g' {} \;
+
+
+# Replace all the "?: " with ": " in all the files of ./src/types/event/__generated/models
+# This is needed becuase all attributes in all types are option as of 2023-04-27 in get5's event schema 
+find ./src/types/event/__generated/models -type f -name "*.ts" -exec sed -i 's/\?: /: /g' {} \;

@@ -41,17 +41,17 @@ export function validateJWT(token: string) {
   }
 }
 
-var allowedOrigins = ['http://localhost:8080', 'https://api.brawlgaming.com', 'https://brawl-gaming-server.herokuapp.com'];
+const allowedOrigins = ['http://localhost:8080', 'https://api.brawlgaming.com', 'https://brawl-gaming-server.herokuapp.com'];
 export function cors(req: Request, res: Response, next: NextFunction) {
-  var origin = req.headers.origin;
+  const origin = req.headers.origin;
 
-  if (allowedOrigins.indexOf(origin || "") != -1){
-    res.setHeader('Access-Control-Allow-Origin', origin || "");
+  if (allowedOrigins.indexOf(origin || '') != -1){
+    res.setHeader('Access-Control-Allow-Origin', origin || '');
   } else {
     res.setHeader('Access-Control-Allow-Origin', 'https://api.brawlgaming.com');
   }
   res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Access-Control-Allow-Origin, Origin, Content-Type, Accept, Authorization, Cache-Contro, X-XSRF-TOKEN');
-  res.header('Access-Control-Allow-Credentials', "true"); 
+  res.header('Access-Control-Allow-Credentials', 'true'); 
   next();
 }

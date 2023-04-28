@@ -1,20 +1,20 @@
-import { MatchId, SeriesType, SteamId, TeamId } from "./common.js"
-import { Team } from "./event/index.js"
+import { MatchId, SeriesType, SteamId, TeamId } from './common.js'
+import { Team } from './event/index.js'
 
 enum MapKey {
-    First = "map0",
-    Second = "map1",
-    Third = "map2",
-    Fourth = "map3",
-    Fifth = "map4",
+    First = 'map0',
+    Second = 'map1',
+    Third = 'map2',
+    Fourth = 'map3',
+    Fifth = 'map4',
 }
 
 export type PlayerStatsRaw = {
-  "1kill_rounds": number,
-  "2kill_rounds": number,
-  "3kill_rounds": number,
-  "4kill_rounds": number,
-  "5kill_rounds": number,
+  '1kill_rounds': number,
+  '2kill_rounds': number,
+  '3kill_rounds': number,
+  '4kill_rounds': number,
+  '5kill_rounds': number,
   assists: number,
   bomb_defuses: number,
   bomb_plants: number,

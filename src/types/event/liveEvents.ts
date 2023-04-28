@@ -1,9 +1,9 @@
-import { Assist, BombSite, Get5Event, Get5EventName, MapNumber, Player, RoundNumber, RoundTime, Victim, Weapon, Winner } from ".";
+import { Assist, BombSite, Get5Event, Get5EventName, MapNumber, Player, RoundNumber, RoundTime, Victim, Weapon, Winner } from '.';
 
 /**
  * Events that only occur during live rounds (not during knife, veto or warmup).
  */
- interface LiveEvent extends Get5Event {}
+ type LiveEvent = Get5Event
 
 /**
  * Fired when a round starts (when freezetime begins).

@@ -1,10 +1,10 @@
-import { GameState, Get5Event, MapNumber, PauseType, Side, Team } from ".";
-import { Get5EventName } from "./eventEnums";
+import { GameState, Get5Event, MapNumber, PauseType, Side, Team } from '.';
+import { Get5EventName } from './eventEnums';
 
 /**
  * Events the occur in relation to a map pick or match-events on a map.
  */
-interface MapFlowEvent extends Get5Event {}
+type MapFlowEvent = Get5Event
 
 
 interface PauseEvent extends MapFlowEvent {

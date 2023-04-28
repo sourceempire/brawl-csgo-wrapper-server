@@ -8,12 +8,12 @@ import {
     Side, 
     Team, 
     Winner 
-} from "."
+} from '.'
 
 /**
  * Events the occur in relation to setting up a match or series.
  */
- interface SeriesFlowEvent extends Get5Event {}
+ type SeriesFlowEvent = Get5Event
 
  /**
  * Fired when the game state changes.

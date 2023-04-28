@@ -1,6 +1,6 @@
-import { getTeamId } from "./csgoServerHandler.js"
-import { MatchId } from "./types/common.js"
-import { RoundEndEvent, roundEndResonMap, Team } from "./types/event/index.js"
+import { getTeamId } from './csgoServerHandler.js'
+import { MatchId } from './types/common.js'
+import { RoundEndEvent, roundEndResonMap, Team } from './types/event/index.js'
 import { 
     MapStats,
     MapStatsRaw,
@@ -10,10 +10,10 @@ import {
     SeriesStatsRaw,
     TeamInfo,
     TeamInfoRaw
-} from "./types/matchStats.js"
+} from './types/matchStats.js'
 
 const convertSeriesStats = (matchId: MatchId, seriesStatsRaw: SeriesStatsRaw): SeriesStats => {
-  let maps: MapStatsRaw[] = []
+  const maps: MapStatsRaw[] = []
 
   if (seriesStatsRaw.map0) {
     maps.push(seriesStatsRaw.map0)
@@ -67,7 +67,7 @@ const convertMapStats = (matchId: MatchId, mapStatsRaw: MapStatsRaw): MapStats =
 const convertTeamInfo = (teamInfoRaw: TeamInfoRaw): TeamInfo => {
   const {score} = teamInfoRaw;
 
-  const steamIds = Object.keys(teamInfoRaw).filter((key) => key !== "score");  
+  const steamIds = Object.keys(teamInfoRaw).filter((key) => key !== 'score');  
 
   return {
 

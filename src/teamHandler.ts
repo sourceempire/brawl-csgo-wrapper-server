@@ -3,7 +3,7 @@ import { Team } from './types/config';
 
 const teamsFilePath = process.env.CSGO_TEAMS_PATH as string;
 
-if (!teamsFilePath) throw Error("")
+if (!teamsFilePath) throw Error('')
 
 const queue: (() => Promise<void>)[] = [];
 let isProcessing = false;

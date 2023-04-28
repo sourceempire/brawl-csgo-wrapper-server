@@ -1,19 +1,18 @@
 import fs from 'fs/promises';
 import { logAddress } from './constants.js';
-import { MatchId } from './types/common';
+import { MatchId } from './types/common.js';
 
-type CVars = Record<string, string | number>
+type CVars = Record<string, string | number | boolean>
 
 const cvarsFilePath = process.env.CSGO_CVARS_PATH as string;
 
 const defaultCvars = {
-    get5_reset_cvars_on_end: 0,
-    get5_stop_command_enabled: 0,
-    get5_hostname_format: '{TEAM1} vs {TEAM2}',
-    get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',
-    get5_remote_log_url: logAddress,
-
-    sm_practicemode_can_be_started: 0,
+  get5_reset_cvars_on_end: 0,
+  get5_stop_command_enabled: 0,
+  get5_hostname_format: '{TEAM1} vs {TEAM2}',
+  get5_message_prefix: '[{ORANGE}Brawl Gaming{NORMAL}]',
+  get5_stats_path_format: 'matchstats_{MATCHID}.json',
+  get5_remote_log_url: logAddress,
 }
 
 const queue: (() => Promise<void>)[] = [];
@@ -55,10 +54,10 @@ async function processQueue(): Promise<void> {
 }
 
 async function addCvarsToQueue(matchId: MatchId, cvars?: CVars): Promise<void> {
-  console.log({matchId});
+  console.log({ matchId });
   return new Promise<void>((resolve) => {
     queue.push(async () => {
-      await addCvars(matchId, {...defaultCvars, ...cvars, get5_server_id: matchId});
+      await addCvars(matchId, { ...defaultCvars, ...cvars, get5_server_id: matchId });
       resolve();
     });
     processQueue();
@@ -66,5 +65,5 @@ async function addCvarsToQueue(matchId: MatchId, cvars?: CVars): Promise<void> {
 }
 
 export default {
-    addCvarsToQueue,
+  addCvarsToQueue,
 };

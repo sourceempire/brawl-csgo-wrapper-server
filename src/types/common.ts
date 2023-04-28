@@ -19,9 +19,9 @@ export type MatchId = string;
 export type TeamId = string
 
 export enum SeriesType {
-    BEST_OF_1 = "bo1",
-    BEST_OF_3 = "bo3",
-    BEST_OF_5 = "bo5"
+    BEST_OF_1 = 'bo1',
+    BEST_OF_3 = 'bo3',
+    BEST_OF_5 = 'bo5'
 }
 
 export type UserTag = string;

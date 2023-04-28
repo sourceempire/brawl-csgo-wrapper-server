@@ -4,7 +4,7 @@ import { Get5Match, Get5MatchTeam } from './types/config';
 const matchStatsFileName = 'matchstats_{MATCHID}.json';
 
 export const getMatchStatsFileName = (matchId: string) => {
-    return matchStatsFileName.replace("{MATCHID}", matchId)
+    return matchStatsFileName.replace('{MATCHID}', matchId)
 }
 
 const gameModes = {
@@ -33,12 +33,12 @@ const roundsConfig = {
     }
 }
 
-const sharedMatchConfig: Omit<Get5Match, "matchid" | "maplist" | "team1" | "team2" | "num_maps" | "players_per_team">  = {
+const sharedMatchConfig: Omit<Get5Match, 'matchid' | 'maplist' | 'team1' | 'team2' | 'num_maps' | 'players_per_team'>  = {
     skip_veto: true,
     side_type: 'never_knife',
 }
 
-const sharedCvars: Get5Match["cvars"] = {
+const sharedCvars: Get5Match['cvars'] = {
     mp_halftime_duration: 15,
     get5_remote_log_url: logAddress,
     get5_stop_command_enabled: 0,
@@ -52,7 +52,7 @@ const sharedCvars: Get5Match["cvars"] = {
 
 export function createCompetetiveConfig(matchId: string, team1: Get5MatchTeam, team2: Get5MatchTeam, map: string) {
     if (team1.players.length !== team2.players.length) {
-        throw Error("The number of players on each team must be equal");
+        throw Error('The number of players on each team must be equal');
     }
 
     return {
@@ -90,7 +90,7 @@ export function createWingmanConfig(matchId: string, team1: Get5MatchTeam, team2
 
 function getPlayersPerTeam( team1: Get5MatchTeam, team2: Get5MatchTeam) {
     if (team1.players.length !== team2.players.length) {
-        throw Error("The number of players on each team must be equal");
+        throw Error('The number of players on each team must be equal');
     }
 
     return team1.players.length
