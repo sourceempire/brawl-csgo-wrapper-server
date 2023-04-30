@@ -43,13 +43,11 @@ export async function createCSGOMatch(matchData: MatchData) {
 
   connectedPlayerCountHandler.addTracker(serverAndMatchId, { players: [...Object.keys(matchData.team1.players), ...Object.keys(matchData.team2.players)] })
 
-
   await teamHandler.addTeamToQueue(matchData.team1);
   await teamHandler.addTeamToQueue(matchData.team2);
   await cvarsHandler.addCvarsToQueue(serverAndMatchId);
 
-
-  await startCSGOServer(serverId);
+  await startServer(serverId);
 
   const numberOfMaps = ['-nm', '1'];
   const ppt = ['-ppt', `${playersPerTeam}`];
@@ -144,7 +142,19 @@ export function getServerAddress(serverId: ServerId) {
   return `${process.env.SERVER_ADDRESS}:${servers[serverId].port}`
 }
 
-function startCSGOServer(serverId: ServerId): Promise<void> {
+function getPlayersPerTeam(team1: Team, team2: Team) {
+  if (Object.keys(team1.players).length !== Object.keys(team2.players).length) {
+    throw Error('The number of players on each team must be equal');
+  }
+
+  return Object.keys(team1.players).length;
+}
+
+
+
+/***** Commands *****/
+
+function startServer(serverId: ServerId): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
       console.log(`Starting server ${serverId}`)
@@ -163,25 +173,24 @@ function startCSGOServer(serverId: ServerId): Promise<void> {
   })
 }
 
-
-
-function getPlayersPerTeam(team1: Team, team2: Team) {
-  if (Object.keys(team1.players).length !== Object.keys(team2.players).length) {
-    throw Error('The number of players on each team must be equal');
-  }
-
-  return Object.keys(team1.players).length;
-}
-
-
-
-/***** Messaging to client *****/
-
-// TODO -> Handle error?
+// TODO -> Handle error, and convert to return Promise.
 export function sendAlertMessage(serverId: string, message: string) {
   const csayCmd = spawn(
     './csgo-server',
     ['@' + serverId, 'exec', 'sm_csay', message],
     spawnOptions
   );
+}
+
+// TODO -> Handle error, and convert to return Promise.
+export function forceStartMatch(serverId: string) {
+  const forceReadyCmd = spawn(
+    './csgo-server',
+    ['@' + serverId, 'exec', 'get5_forcestart'],
+    spawnOptions
+  );
+
+  forceReadyCmd.on('close', () => {
+    console.log('Force started match');
+  });
 }

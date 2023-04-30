@@ -1,9 +1,9 @@
 import { finishMatch } from './csgoServerHandler.js';
 import { Connection } from 'sockjs';
 import { MatchId } from './types/common.js';
-import { getServerAddress, sendAlertMessage } from './csgoServerHandlerNew.js';
+import { getServerAddress, sendAlertMessage, forceStartMatch } from './csgoServerHandlerNew.js';
 import { Get5_Event, Get5_OnGoingLive, Get5_OnMapResult, Get5_OnPlayerConnected, Get5_OnRoundEnd, Get5_OnRoundStart, Get5_OnSeriesInit, Get5_OnSeriesResult } from './types/event/get5Events.js';
-import { isMatchReadyToStart, removeTracker } from './handlers/connectedPlayerCountHandler.js';
+import * as playerConnectTracker from './handlers/connectedPlayerCountHandler.js';
 
 const socketConnections: Connection[] = [];
 const unsentEvents: any[] = [];
@@ -35,7 +35,7 @@ export function clearSocket(connection: Connection) {
   }
 }
 
-function startWarmupTimer(serverId: string, millisecondsToStart: number) {
+function startWarmupTimer({ serverId, millisecondsToStart, onTimerComplete }: { serverId: string, millisecondsToStart: number, onTimerComplete: () => void; }) {
   let currentMillisecondsToStart = millisecondsToStart;
 
   warmupTimers[serverId] = setInterval(() => {
@@ -49,6 +49,7 @@ function startWarmupTimer(serverId: string, millisecondsToStart: number) {
 
     if (currentMillisecondsToStart <= 0) {
       clearWarmupTimer(serverId)
+      onTimerComplete();
     }
   }, 1000)
 }
@@ -57,7 +58,6 @@ function clearWarmupTimer(matchId: string) {
   if (warmupTimers[matchId]) {
     clearTimeout(warmupTimers[matchId])
     delete warmupTimers[matchId];
-    const a = 'asd'
   }
 }
 
@@ -74,9 +74,16 @@ function handleSeriesStart(event: Get5_OnSeriesInit) {
 
 
 function handlePlayerConnected(event: Get5_OnPlayerConnected) {
-  if (isMatchReadyToStart(event.matchid, event)) {
-    startWarmupTimer(event.matchid, 300000)
-    removeTracker(event.matchid)
+  const { serverId } = parseServerAndMatchId(event.matchid);
+
+  if (playerConnectTracker.isMatchReadyToStart(event.matchid, event)) {
+    playerConnectTracker.removeTracker(event.matchid)
+
+    startWarmupTimer({
+      serverId,
+      millisecondsToStart: 300000,
+      onTimerComplete: () => forceStartMatch(serverId)
+    })
   }
 }
 
